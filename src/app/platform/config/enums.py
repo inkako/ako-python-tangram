@@ -17,7 +17,5 @@ class LogLevelEnum(StrEnum):
 
 
 class LogFormatEnum(StrEnum):
-    SIMPLE = "simple"
     STANDARD = "standard"
-    DETAILED = "detailed"
-    STRUCTURED = "structured"
+    JSON = "json"

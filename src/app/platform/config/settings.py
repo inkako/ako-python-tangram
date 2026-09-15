@@ -49,6 +49,8 @@ class LoggingSettings(BaseSettings):
     LOG_FILE_PATH: str = config("LOG_FILE_PATH", default="logs/app.log")
     LOG_FILE_MAX_SIZE: int = config("LOG_FILE_MAX_SIZE", default=10485760, cast=int)
     LOG_FILE_BACKUP_COUNT: int = config("LOG_FILE_BACKUP_COUNT", default=10, cast=int)
+    # noisy loggers
+    LOG_NOISY_LOGGERS: str = config("LOG_NOISY_LOGGERS", default="uvicorn")
 
 
 class WebServerSettings(BaseSettings):
@@ -68,7 +70,7 @@ class WebServerSettings(BaseSettings):
             return ["*"]
         return [x.strip() for x in self.CORS_ALLOW_ORIGINS.split(",") if x.strip()]
 
-    # gzip settins
+    # gzip settings
     GZIP_ENABLED: bool = config("GZIP_ENABLED", default=True, cast=bool)
     GZIP_MIN_SIZE: int = config("GZIP_MIN_SIZE", default=1024, cast=int)
 
