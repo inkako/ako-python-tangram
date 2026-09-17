@@ -22,13 +22,13 @@ def _configure_logger():
             logger = logging.getLogger(__name__)
             settings = get_settings()
             logger.info(
-                msg=f"Logger configured for {settings.ENV} environment!",
+                msg=f"Logger configured for [{settings.ENV}] environment!",
                 extra={
                     "env": settings.ENV,
                     "log_level": settings.LOG_LEVEL,
                     "log_format": settings.LOG_FORMAT,
-                    "log_file_path": settings.LOG_FILE_NAME,
-                    "log_file_max_size": settings.LOG_FILE_MAX_BYTES,
+                    "log_file_name": settings.LOG_FILE_NAME,
+                    "log_file_max_bytes": settings.LOG_FILE_MAX_BYTES,
                     "log_file_backup_count": settings.LOG_FILE_BACKUP_COUNT,
                     "log_console_enabled": settings.LOG_CONSOLE_ENABLED,
                     "log_file_enabled": settings.LOG_FILE_ENABLED
