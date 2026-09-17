@@ -1,7 +1,7 @@
 import logging
 import os.path
 
-from app.platform.config.enums import EnvironmentEnum, LogLevelEnum, LogFormatEnum
+from app.platform.config.enums import EnvEnum, LogLevelEnum, LogFormatterTypeEnum
 from pydantic_settings import BaseSettings
 from starlette.config import Config
 
@@ -17,7 +17,7 @@ def _get_env_path():
 
 
 env_path = _get_env_path()
-logger.info(f"env path: {env_path}")
+logger.info(f".env path: {env_path}")
 
 config: Config = Config(env_path)
 
@@ -26,7 +26,7 @@ class EnvironmentSettings(BaseSettings):
     """
     Environment settings
     """
-    ENV: EnvironmentEnum = config("ENVIRONMENT", default=EnvironmentEnum.LOCAL, cast=EnvironmentEnum)
+    ENV: EnvEnum = config("ENV", default=EnvEnum.DEV, cast=EnvEnum)
 
 
 class ApplicationSettings(BaseSettings):
@@ -42,13 +42,15 @@ class LoggingSettings(BaseSettings):
     """
     Logging settings
     """
-    LOG_LEVEL: str = config("LOG_LEVEL", default=LogLevelEnum.INFO.value)
-    LOG_FORMAT: str = config("LOG_FORMAT", default=LogFormatEnum.STANDARD.value)
+    LOG_LEVEL: LogLevelEnum = config("LOG_LEVEL", default=LogLevelEnum.INFO, cast=LogLevelEnum)
+    LOG_FORMAT: LogFormatterTypeEnum = config("LOG_FORMAT", default=LogFormatterTypeEnum.DETAILED,
+                                              cast=LogFormatterTypeEnum)
     LOG_CONSOLE_ENABLED: bool = config("LOG_CONSOLE_ENABLED", default=True, cast=bool)
     LOG_FILE_ENABLED: bool = config("LOG_FILE_ENABLED", default=False, cast=bool)
-    LOG_FILE_PATH: str = config("LOG_FILE_PATH", default="logs/app.log")
-    LOG_FILE_MAX_SIZE: int = config("LOG_FILE_MAX_SIZE", default=10485760, cast=int)
+    LOG_FILE_NAME: str = config("LOG_FILE_NAME", default="logs/app.log")
+    LOG_FILE_MAX_BYTES: int = config("LOG_FILE_MAX_BYTES", default=10485760, cast=int)
     LOG_FILE_BACKUP_COUNT: int = config("LOG_FILE_BACKUP_COUNT", default=10, cast=int)
+
     # noisy loggers
     LOG_NOISY_LOGGERS: str = config("LOG_NOISY_LOGGERS", default="uvicorn")
 
@@ -126,3 +128,7 @@ class Settings(
 
 
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    return settings

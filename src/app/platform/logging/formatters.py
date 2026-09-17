@@ -2,8 +2,9 @@ import json
 import logging
 import traceback
 from datetime import datetime, UTC
+from typing import override
 
-from typing_extensions import override
+from app.platform.config.enums import LogFormatterTypeEnum
 
 
 class SimpleFormatter(logging.Formatter):
@@ -16,8 +17,8 @@ class SimpleFormatter(logging.Formatter):
         )
 
 
-class StandardFormatter(logging.Formatter):
-    """A standard log formatter."""
+class DetailedFormatter(logging.Formatter):
+    """A detailed log formatter."""
 
     @override
     def format(self, record: logging.LogRecord) -> str:
@@ -26,16 +27,16 @@ class StandardFormatter(logging.Formatter):
         log_parts = [
             f"timestamp={timestamp}",
             f"level={record.levelname}",
-            f"module={record.name}",
-            f"function={record.funcName}",
-            f"message={record.message}",
-            f"line={record.lineno}",
             f"thread_id={record.thread}",
             f"process_id={record.process}",
+            f"module={record.name}",
+            f"function={record.funcName}",
+            f"line={record.lineno}",
+            f"message={record.msg}",
         ]
 
         # extra log parts
-        extra = getattr(record, "_extra", {})
+        extra = getattr(record, "_ctx", {})
         for key, value in extra.items():
             log_parts.append(f"{key}={value}")
 
@@ -47,8 +48,8 @@ class StandardFormatter(logging.Formatter):
         return " ".join(log_parts)
 
 
-class JsonFormatter(logging.Formatter):
-    """A JSON log formatter for machine-readable log output."""
+class StructuredFormatter(logging.Formatter):
+    """A Structured(JSON) log formatter for machine-readable log output."""
 
     @override
     def format(self, record: logging.LogRecord) -> str:
@@ -56,16 +57,16 @@ class JsonFormatter(logging.Formatter):
         log_obj: dict[str, object] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
-            "module": record.name,
-            "function": record.funcName,
-            "message": record.message,
-            "line": record.lineno,
             "thread_id": record.thread,
             "process_id": record.process,
+            "module": record.name,
+            "function": record.funcName,
+            "line": record.lineno,
+            "message": record.msg,
         }
 
         # extra log parts
-        extra = getattr(record, "_extra", {})
+        extra = getattr(record, "_ctx", {})
         log_obj.update(extra)
 
         # exception log part
@@ -73,7 +74,23 @@ class JsonFormatter(logging.Formatter):
             log_obj["exception"] = {
                 "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
                 "message": str(record.exc_info[1]) if record.exc_info[1] else None,
-                "traceback": traceback.format_exception(*record.exc_info)
+                "stacktrace": traceback.format_exception(*record.exc_info)
             }
 
         return json.dumps(log_obj, ensure_ascii=False)
+
+
+def get_formatter(format_type: LogFormatterTypeEnum) -> logging.Formatter:
+    formatters: dict[str, type[logging.Formatter]] = {
+        LogFormatterTypeEnum.SIMPLE: SimpleFormatter,
+        LogFormatterTypeEnum.DETAILED: DetailedFormatter,
+        LogFormatterTypeEnum.STRUCTURED: StructuredFormatter,
+    }
+
+    formatter_class = formatters.get(format_type)
+    if formatter_class is None:
+        raise ValueError(
+            f"Invalid format type: {format_type}. Available: {', '.join(formatters.keys())}"
+        )
+
+    return formatter_class()

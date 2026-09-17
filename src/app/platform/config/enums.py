@@ -1,9 +1,9 @@
 from enum import StrEnum
 
 
-class EnvironmentEnum(StrEnum):
-    LOCAL = "local"
-    DEVELOPMENT = "development"
+class EnvEnum(StrEnum):
+    DEV = "dev"
+    TEST = "test"
     STAGING = "staging"
     PRODUCTION = "production"
 
@@ -16,6 +16,7 @@ class LogLevelEnum(StrEnum):
     CRITICAL = "CRITICAL"
 
 
-class LogFormatEnum(StrEnum):
-    STANDARD = "standard"
-    JSON = "json"
+class LogFormatterTypeEnum(StrEnum):
+    SIMPLE = "simple"
+    DETAILED = "detailed"
+    STRUCTURED = "structured"
