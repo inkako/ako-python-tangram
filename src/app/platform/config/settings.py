@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def _get_env_path():
     # current file dir
     current_file_dir = os.path.dirname(os.path.realpath(__file__))
-    # src dir
+    # dir at the same level as src
     project_root = os.path.abspath(os.path.join(current_file_dir, "..", "..", ".."))
     return os.path.join(project_root, ".env")
 
@@ -72,6 +72,18 @@ class WebServerSettings(BaseSettings):
             return ["*"]
         return [x.strip() for x in self.CORS_ALLOW_ORIGINS.split(",") if x.strip()]
 
+    @property
+    def ALLOWED_METHODS(self) -> list[str]:
+        if not self.CORS_ALLOW_METHODS:
+            return ["*"]
+        return [x.strip() for x in self.CORS_ALLOW_METHODS.split(",") if x.strip()]
+
+    @property
+    def ALLOWED_HEADERS(self) -> list[str]:
+        if not self.CORS_ALLOW_HEADERS:
+            return ["*"]
+        return [x.strip() for x in self.CORS_ALLOW_HEADERS.split(",") if x.strip()]
+
     # gzip settings
     GZIP_ENABLED: bool = config("GZIP_ENABLED", default=True, cast=bool)
     GZIP_MIN_SIZE: int = config("GZIP_MIN_SIZE", default=1024, cast=int)
@@ -103,6 +115,8 @@ class DatabaseSettings(BaseSettings):
 
     POSTGRES_POOL_SIZE: int = config("POSTGRES_POOL_SIZE", default=20, cast=int)
     POSTGRES_MAX_OVERFLOW: int = config("POSTGRES_MAX_OVERFLOW", default=0, cast=int)
+
+    POSTGRES_ECHO: bool = config("POSTGRES_ECHO", default=False, cast=bool)
 
     @property
     def DATABASE_URL(self) -> str:

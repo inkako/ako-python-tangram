@@ -1,5 +1,5 @@
 [project]
-name = "ako-python-tangram"
+name = "app"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -9,10 +9,8 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[all]>=0.141.1",
+    "sqlalchemy>=2.0.54",
 ]
-
-[project.scripts]
-ako-python-tangram = "ako_python_tangram:main"
 
 [build-system]
 requires = ["uv_build>=0.11.30,<0.12.0"]
