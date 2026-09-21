@@ -1,5 +1,6 @@
 import logging
-from typing import Any, MutableMapping, override
+from collections.abc import MutableMapping
+from typing import Any, override
 
 
 class LoggerAdapter(logging.LoggerAdapter):

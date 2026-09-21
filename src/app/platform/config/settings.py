@@ -1,9 +1,10 @@
 import logging
 import os.path
 
-from app.platform.config.enums import EnvEnum, LogLevelEnum, LogFormatterTypeEnum
 from pydantic_settings import BaseSettings
 from starlette.config import Config
+
+from app.platform.config.enums import EnvEnum, LogFormatterTypeEnum, LogLevelEnum
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import json
 import logging
 import traceback
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import override
 
 from app.platform.config.enums import LogFormatterTypeEnum

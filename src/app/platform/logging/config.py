@@ -1,7 +1,7 @@
 import logging
 
-from app.platform.config.enums import LogFormatterTypeEnum, EnvEnum
-from app.platform.config.settings import get_settings, Settings
+from app.platform.config.enums import EnvEnum, LogFormatterTypeEnum
+from app.platform.config.settings import Settings, get_settings
 from app.platform.logging.filters import CorrelationIdFilter
 from app.platform.logging.handlers import create_console_handler, create_rotating_file_handler
 
