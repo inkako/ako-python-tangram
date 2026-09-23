@@ -10,7 +10,7 @@ class LoggerAdapter(logging.LoggerAdapter):
             self,
             logger: logging.Logger,
             extra: dict[str, object] | None = None,
-            merge_extra: bool = False
+            merge_extra: bool = False,
     ) -> None:
         super().__init__(logger, extra, merge_extra)
 
@@ -18,7 +18,7 @@ class LoggerAdapter(logging.LoggerAdapter):
     def process(
             self,
             msg: Any,
-            kwargs: MutableMapping[str, Any]
+            kwargs: MutableMapping[str, Any],
     ) -> tuple[Any, MutableMapping[str, Any]]:
         adapter_extra = self.extra if self.extra is not None else {}
         caller_extra = kwargs.get("extra", {})

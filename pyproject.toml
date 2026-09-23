@@ -8,6 +8,8 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.20.0",
+    "bcrypt>=5.0.0",
     "fastapi[all]>=0.141.1",
     "sqlalchemy>=2.0.54",
 ]
@@ -26,7 +28,7 @@ src = ["src"]
 line-length = 128
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "F", "I", "UP", "COM812"]
 extend-select = ["UP006", "UP007", "UP035", "UP039", "PLC0415"]
 
 [tool.ruff.lint.isort]

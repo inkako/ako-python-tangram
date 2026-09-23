@@ -44,7 +44,7 @@ class ColoredConsoleHandler(logging.StreamHandler):
 def create_console_handler(
         format_type: LogFormatterTypeEnum = LogFormatterTypeEnum.DETAILED,
         level: LogLevelEnum = LogLevelEnum.INFO,
-        use_colors: bool = True
+        use_colors: bool = True,
 ) -> logging.Handler:
     """
     Create a console handler with the given format type, level, and color settings.
@@ -75,7 +75,7 @@ class RotatingFileHandler(logging.handlers.RotatingFileHandler):
             filename: str,
             max_bytes: int = 104857600,
             backup_count: int = 10,
-            encoding: str = "utf-8"
+            encoding: str = "utf-8",
     ):
         log_path = Path(filename)
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -88,7 +88,7 @@ def create_rotating_file_handler(
         level: LogLevelEnum = LogLevelEnum.INFO,
         max_bytes: int = 104857600,
         backup_count: int = 10,
-        encoding: str = "utf-8"
+        encoding: str = "utf-8",
 ) -> logging.Handler:
     """
     Create a rotating file handler with the given format type, level, and file size settings.

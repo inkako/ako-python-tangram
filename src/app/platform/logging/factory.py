@@ -31,8 +31,8 @@ def _configure_logger():
                     "log_file_max_bytes": settings.LOG_FILE_MAX_BYTES,
                     "log_file_backup_count": settings.LOG_FILE_BACKUP_COUNT,
                     "log_console_enabled": settings.LOG_CONSOLE_ENABLED,
-                    "log_file_enabled": settings.LOG_FILE_ENABLED
-                }
+                    "log_file_enabled": settings.LOG_FILE_ENABLED,
+                },
             )
 
 

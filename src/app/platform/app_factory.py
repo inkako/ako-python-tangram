@@ -1,13 +1,14 @@
+from fastapi import APIRouter, FastAPI
+from fastapi.exceptions import RequestValidationError
+
 from app.platform.config.settings import get_settings
-from app.platform.exception.exceptions import BizException
+from app.platform.exception.exceptions import BizError
 from app.platform.exception.handlers import (
     biz_exception_handler,
     request_validation_exception_handler,
     unhandled_exception_handler,
 )
 from app.platform.logging import get_logger
-from fastapi import APIRouter, FastAPI
-from fastapi.exceptions import RequestValidationError
 
 logger = get_logger(__name__)
 
@@ -45,15 +46,17 @@ def _register_exception_handlers(app: FastAPI):
     Register all exception handlers.
     """
     app.add_exception_handler(
-        RequestValidationError, request_validation_exception_handler
+        RequestValidationError, request_validation_exception_handler,
     )
-    app.add_exception_handler(BizException, biz_exception_handler)
+    app.add_exception_handler(BizError, biz_exception_handler)
     app.add_exception_handler(Exception, unhandled_exception_handler)
 
     logger.debug("exception handlers registered")
 
 
-def create_app(router: APIRouter) -> FastAPI:
+def create_app(
+    router: APIRouter,
+) -> FastAPI:
     app = FastAPI()
     app.include_router(router)
 

@@ -13,7 +13,7 @@ def _get_env_path():
     # current file dir
     current_file_dir = os.path.dirname(os.path.realpath(__file__))
     # dir at the same level as src
-    project_root = os.path.abspath(os.path.join(current_file_dir, "..", "..", ".."))
+    project_root = os.path.abspath(os.path.join(current_file_dir, "..", "..", "..", ".."))
     return os.path.join(project_root, ".env")
 
 
@@ -27,6 +27,7 @@ class EnvironmentSettings(BaseSettings):
     """
     Environment settings
     """
+
     ENV: EnvEnum = config("ENV", default=EnvEnum.DEV, cast=EnvEnum)
 
 
@@ -34,6 +35,7 @@ class ApplicationSettings(BaseSettings):
     """
     Application settings
     """
+
     DEBUG: bool = config("DEBUG", default=False, cast=bool)
     APP_NAME: str = config("APP_NAME", default="TANGRAM PROJECT")
     APP_DESC: str = config("APP_DESC", default="A TANGRAM PROJECT")
@@ -43,9 +45,13 @@ class LoggingSettings(BaseSettings):
     """
     Logging settings
     """
-    LOG_LEVEL: LogLevelEnum = config("LOG_LEVEL", default=LogLevelEnum.INFO, cast=LogLevelEnum)
-    LOG_FORMAT: LogFormatterTypeEnum = config("LOG_FORMAT", default=LogFormatterTypeEnum.DETAILED,
-                                              cast=LogFormatterTypeEnum)
+
+    LOG_LEVEL: LogLevelEnum = config(
+        "LOG_LEVEL", default=LogLevelEnum.INFO, cast=LogLevelEnum,
+    )
+    LOG_FORMAT: LogFormatterTypeEnum = config(
+        "LOG_FORMAT", default=LogFormatterTypeEnum.DETAILED, cast=LogFormatterTypeEnum,
+    )
     LOG_CONSOLE_ENABLED: bool = config("LOG_CONSOLE_ENABLED", default=True, cast=bool)
     LOG_FILE_ENABLED: bool = config("LOG_FILE_ENABLED", default=False, cast=bool)
     LOG_FILE_NAME: str = config("LOG_FILE_NAME", default="logs/app.log")
@@ -60,10 +66,15 @@ class WebServerSettings(BaseSettings):
     """
     Web server settings
     """
+
     # cors settings
     CORS_ENABLED: bool = config("CORS_ENABLED", default=True, cast=bool)
-    CORS_ALLOW_ORIGINS: str = config("CORS_ALLOW_ORIGINS", default="localhost,127.0.0.1")
-    CORS_ALLOW_CREDENTIALS: bool = config("CORS_ALLOW_CREDENTIALS", default=True, cast=bool)
+    CORS_ALLOW_ORIGINS: str = config(
+        "CORS_ALLOW_ORIGINS", default="localhost,127.0.0.1",
+    )
+    CORS_ALLOW_CREDENTIALS: bool = config(
+        "CORS_ALLOW_CREDENTIALS", default=True, cast=bool,
+    )
     CORS_ALLOW_METHODS: str = config("CORS_ALLOW_METHODS", default="*")
     CORS_ALLOW_HEADERS: str = config("CORS_ALLOW_HEADERS", default="*")
 
@@ -94,19 +105,25 @@ class AuthenticationSettings(BaseSettings):
     """
     Authentication settings
     """
+
     SECRET_KEY: str = config("SECRET_KEY", default="set-a-secure-key")
 
     # session settings
-    SESSION_TIMEOUT_MINUTES: int = config("SESSION_TIMEOUT_MINUTES", default=30, cast=int)
+    SESSION_TIMEOUT_MINUTES: int = config(
+        "SESSION_TIMEOUT_MINUTES", default=30, cast=int,
+    )
 
     # csrf settings
-    CSRF_PROTECTION_ENABLED: bool = config("CSRF_PROTECTION_ENABLED", default=True, cast=bool)
+    CSRF_PROTECTION_ENABLED: bool = config(
+        "CSRF_PROTECTION_ENABLED", default=True, cast=bool,
+    )
 
 
 class DatabaseSettings(BaseSettings):
     """
     Database settings
     """
+
     POSTGRES_USER: str = config("POSTGRES_USER", default="postgres")
     POSTGRES_PASSWORD: str = config("POSTGRES_PASSWORD", default="postgres")
     POSTGRES_PREFIX: str = config("POSTGRES_PREFIX", default="postgresql+asyncpg://")
@@ -131,6 +148,18 @@ class DatabaseSettings(BaseSettings):
         )
 
 
+class AdminSettings(BaseSettings):
+    """
+    Admin settings
+    """
+
+    ADMIN_NAME: str = config("ADMIN_NAME", default="Admin")
+    ADMIN_EMAIL: str = config("ADMIN_EMAIL", default="admin@example.com")
+    ADMIN_PHONE: str = config("ADMIN_PHONE", default="13012345678")
+    ADMIN_USERNAME: str = config("ADMIN_USERNAME", default="admin")
+    ADMIN_PASSWORD: str = config("ADMIN_PASSWORD", default="password")
+
+
 class Settings(
     EnvironmentSettings,
     ApplicationSettings,
@@ -138,6 +167,7 @@ class Settings(
     WebServerSettings,
     AuthenticationSettings,
     DatabaseSettings,
+    AdminSettings,
 ):
     pass
 

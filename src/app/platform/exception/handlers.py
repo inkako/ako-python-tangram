@@ -3,14 +3,14 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.platform.exception.exceptions import BizException
+from app.platform.exception.exceptions import BizError
 from app.platform.logging import get_logger
 
 logger = get_logger(__name__)
 
 
 async def request_validation_exception_handler(
-    request: Request, exc: RequestValidationError
+    request: Request, exc: RequestValidationError,
 ):
     """
     Request validation exception handler.
@@ -22,12 +22,12 @@ async def request_validation_exception_handler(
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={
-            "message": "Invalid request. Please check your request and try again."
+            "message": "Invalid request. Please check your request and try again.",
         },
     )
 
 
-async def biz_exception_handler(request: Request, exc: BizException):
+async def biz_exception_handler(request: Request, exc: BizError):
     """
     Business exception handler.
     """

@@ -13,7 +13,7 @@ class SimpleFormatter(logging.Formatter):
     def __init__(self):
         super().__init__(
             fmt="[%(asctime)s] %(levelname)s %(name)s: %(message)s",
-            datefmt="%H:%M:%S"
+            datefmt="%H:%M:%S",
         )
 
 
@@ -74,7 +74,7 @@ class StructuredFormatter(logging.Formatter):
             log_obj["exception"] = {
                 "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
                 "message": str(record.exc_info[1]) if record.exc_info[1] else None,
-                "stacktrace": traceback.format_exception(*record.exc_info)
+                "stacktrace": traceback.format_exception(*record.exc_info),
             }
 
         return json.dumps(log_obj, ensure_ascii=False)
@@ -90,7 +90,7 @@ def get_formatter(format_type: LogFormatterTypeEnum) -> logging.Formatter:
     formatter_class = formatters.get(format_type)
     if formatter_class is None:
         raise ValueError(
-            f"Invalid format type: {format_type}. Available: {', '.join(formatters.keys())}"
+            f"Invalid format type: {format_type}. Available: {', '.join(formatters.keys())}",
         )
 
     return formatter_class()
