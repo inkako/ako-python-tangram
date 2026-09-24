@@ -9,7 +9,7 @@ _logger_configured = False
 _configuration_lock = threading.Lock()
 
 
-def _configure_logger():
+def configure_logger():
     global _logger_configured
 
     with _configuration_lock:
@@ -38,7 +38,7 @@ def _configure_logger():
 
 def _ensure_logger_configured():
     if not _logger_configured:
-        _configure_logger()
+        configure_logger()
 
 
 def get_logger(name: str, **extra_context) -> logging.Logger | logging.LoggerAdapter:

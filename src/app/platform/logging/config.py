@@ -57,7 +57,7 @@ def _configure_logger_handlers(settings: Settings) -> None:
 
 
 def _configure_noisy_logger(settings):
-    """Configure third-part package loggers."""
+    """Configure third-party package loggers."""
     noisy_loggers = {
         "uvicorn": logging.WARNING,
         "asyncpg": logging.WARNING,
