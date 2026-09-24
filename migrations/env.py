@@ -4,13 +4,14 @@ import logging
 from logging.config import fileConfig
 from pkgutil import walk_packages
 
-from app.platform.config.settings import get_settings
-from app.platform.database.base import Base
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+from app.platform.config.settings import get_settings
+from app.platform.database.base import Base
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
+
+
 def import_models():
     # the platform models, and all modules models
     model_packages = ["app.platform", "app.modules"]
@@ -38,6 +41,8 @@ def import_models():
             if mod_name.endswith(".models"):
                 importlib.import_module(mod_name)
                 logger.info(f"Alembic, Imported {mod_name}")
+
+
 import_models()
 
 # other values from the config, defined by the needs of env.py,
@@ -46,6 +51,7 @@ import_models()
 # ... etc.
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
