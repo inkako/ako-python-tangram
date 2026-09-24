@@ -32,7 +32,7 @@ UpdateSchemaType: BaseModel,
         db_obj = self._model(**create_data)
 
         session.add(db_obj)
-        await session.commit()
+        await session.flush()
         await session.refresh(db_obj)
 
         return db_obj
@@ -139,7 +139,7 @@ UpdateSchemaType: BaseModel,
                 if hasattr(db_obj, field):
                     setattr(db_obj, field, value)
 
-            await session.commit()
+            await session.flush()
             await session.refresh(db_obj)
 
         return db_obj
@@ -162,6 +162,6 @@ UpdateSchemaType: BaseModel,
         db_obj = db_obj or await self.get(session, *args, **kwargs)
 
         await session.delete(db_obj)
-        await session.commit()
+        await session.flush()
 
         return db_obj

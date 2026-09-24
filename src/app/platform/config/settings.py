@@ -1,5 +1,6 @@
 import logging
 import os.path
+from urllib.parse import quote_plus
 
 from pydantic_settings import BaseSettings
 from starlette.config import Config
@@ -143,7 +144,7 @@ class DatabaseSettings(BaseSettings):
             return direct_url
 
         return (
-            f"{self.POSTGRES_PREFIX}{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"{self.POSTGRES_PREFIX}{self.POSTGRES_USER}:{quote_plus(self.POSTGRES_PASSWORD)}"
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DATABASE}"
         )
 

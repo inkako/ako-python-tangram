@@ -46,4 +46,6 @@ class UserService:
         if not created_user:
             raise UserExistsError(biz_code.DATA_EXISTS, "Failed to create user")
 
+        await session.commit()
+
         return created_user

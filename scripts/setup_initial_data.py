@@ -26,10 +26,6 @@ async def create_first_superuser() -> None:
 
         user_service = UserService()
         async with local_async_session() as session:
-            user_exists = await user_service.user_exists(session, username=username)
-            if user_exists:
-                logger.warning("Superuser already exists. Skipping creation.")
-                return
             user_create_schema = UserCreateSchema(
                 name=name,
                 email=email,

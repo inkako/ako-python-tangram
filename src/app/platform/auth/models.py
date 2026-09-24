@@ -1,11 +1,12 @@
+from app.platform.constant.enums import AccountStatusEnum
+from app.platform.database.base import Base, SoftDeletionMixin, TimestampMixin
 from sqlalchemy import BigInteger, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.platform.constant.enums import AccountStatusEnum
-from app.platform.database.base import Base, SoftDeletionMixin, TimestampMixin
-
 
 class User(TimestampMixin, SoftDeletionMixin, Base):
+    __tablename__ = "user"
+
     id: Mapped[int] = mapped_column(
         BigInteger,
         primary_key=True,
@@ -29,13 +30,13 @@ class User(TimestampMixin, SoftDeletionMixin, Base):
     )
 
 
-class Role(TimestampMixin, SoftDeletionMixin): ...
-
-
-class Permission(TimestampMixin, SoftDeletionMixin): ...
-
-
-class UserRole(TimestampMixin, SoftDeletionMixin): ...
-
-
-class RolePermission(TimestampMixin, SoftDeletionMixin): ...
+# class Role(TimestampMixin, SoftDeletionMixin, Base): ...
+#
+#
+# class Permission(TimestampMixin, SoftDeletionMixin, Base): ...
+#
+#
+# class UserRole(TimestampMixin, SoftDeletionMixin, Base): ...
+#
+#
+# class RolePermission(TimestampMixin, SoftDeletionMixin, Base): ...

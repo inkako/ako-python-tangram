@@ -10,11 +10,11 @@ A Tangram for an AMP-Based Python Web Project.Tangram is a modular toolkit for w
 - 其他常见：uvicorn, gunicorn, watchfiles, paramiko
 
 ## 数据库迁移 Migration
-- 初始化 Alembic：uv run alembic init migrations
-- 配置 alembic.ini：把sqlalchemy.url 那行注释掉或删掉（因为你会在 env.py 里动态配置）
-- 修改 env.py：让 Alembic 使用项目的数据库配置和模型元数据
+- 初始化 Alembic：uv run alembic init -t async migrations
+- 配置 alembic.ini：把 sqlalchemy.url 那行注释掉或删掉（因为你会在 env.py 里动态配置）
+- 修改 env.py：让 Alembic 使用项目的数据库配置、模型元数据及模型
 - 运行迁移命令：
-  - 生成迁移文件：uv run alembic revision --autogenerate -m "msg:init"
+  - 生成迁移文件：uv run alembic revision --autogenerate -m "msg"
   - 执行迁移：uv run alembic upgrade head
 
 ### 常用迁移命令
@@ -29,6 +29,7 @@ A Tangram for an AMP-Based Python Web Project.Tangram is a modular toolkit for w
 | `alembic history` | 查看所有迁移历史 |
 
 ### 迁移模式
+> 有无 --sql 参数决定了迁移模式
 #### 离线模式
 `以离线模式输出 SQL 脚本：uv run alembic upgrade head --sql > migration.sql`
 #### 在线模式
