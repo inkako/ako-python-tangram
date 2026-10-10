@@ -5,6 +5,8 @@ class BizError(Exception):
         self.code = code
         super().__init__(message)
 
+class UnauthenticatedError(BizError):
+    pass
 
 class UserExistsError(BizError):
     pass

@@ -21,7 +21,7 @@ class Base(DeclarativeBase, MappedAsDataclass):
 
     Note:
         All database models should inherit from this base class to ensure
-        consistent behavior and access to shared functionality.
+        consistent behavior and facade to shared functionality.
 
         The MappedAsDataclass mixin automatically generates dataclass
         methods (__init__, __repr__, __eq__, etc.) based on the model's

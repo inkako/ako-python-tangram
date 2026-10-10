@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class BaseRepository[
-ModelType,
-CreateSchemaType: BaseModel,
-UpdateSchemaType: BaseModel,
+    ModelType,
+    CreateSchemaType: BaseModel,
+    UpdateSchemaType: BaseModel,
 ]:
     def __init__(self, model: type[ModelType]):
         self._model = model
