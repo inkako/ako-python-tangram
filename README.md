@@ -1,6 +1,9 @@
 # ako-python-tangram
 A Tangram for an AMP-Based Python Web Project.Tangram is a modular toolkit for web apps, and it's built on the AMP stack — API, Modules, and Platform.
 
+"imports point inward"规则：
+规则约束的是"import 依赖",不是"协作需求"
+
 ## 项目常见三方库
 - 数据库类：sqlalchemy, asyncpg, psycopg, aiomysql, pymongo, motor
 - 网络类：urllib3, requests, httpx, aiohttp, httplib2

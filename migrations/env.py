@@ -16,7 +16,7 @@ from app.platform.database.base import Base
 logger = logging.getLogger(__name__)
 
 # this is the Alembic Config object, which provides
-# facade to the values within the .ini file in use.
+# apis to the values within the .ini file in use.
 config = context.config
 
 # Interpret the config file for Python logging.

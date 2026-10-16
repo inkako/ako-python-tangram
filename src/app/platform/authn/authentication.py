@@ -1,5 +1,5 @@
-from app.platform.auth.models import User
-from app.platform.auth.repository import UserRepository
+from app.platform.authn.models import User
+from app.platform.authn.repository import UserRepository
 from app.platform.constant.enums import AccountStatusEnum
 from app.platform.exception import biz_code
 from app.platform.exception.exceptions import UnauthenticatedError
@@ -33,9 +33,16 @@ async def authenticate_password(db: AsyncSession, identifier: str, password: str
     return user
 
 
-async def create_session():
+async def _create_session():
     ...
 
 
-def set_session_cookies(response, session_id):
+def _set_session_cookies(response, session_id):
+    ...
+
+async def complete_login(
+    db: AsyncSession,
+    identifier: str,
+    password: str,
+):
     ...
