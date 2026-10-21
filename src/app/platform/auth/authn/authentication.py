@@ -1,5 +1,5 @@
-from app.platform.authn.models import User
-from app.platform.authn.repository import UserRepository
+from app.platform.auth.models import User
+from app.platform.auth.authn.repository import UserRepository
 from app.platform.constant.enums import AccountStatusEnum
 from app.platform.exception import biz_code
 from app.platform.exception.exceptions import UnauthenticatedError

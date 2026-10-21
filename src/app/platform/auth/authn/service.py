@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.platform.authn.models import User
-from app.platform.authn.repository import UserRepository
-from app.platform.authn.schemas import UserCreateSchema
+from app.platform.auth.models import User
+from app.platform.auth.authn.repository import UserRepository
+from app.platform.auth.authn.schemas import UserCreateSchema
 from app.platform.exception import biz_code
 from app.platform.exception.exceptions import UserExistsError
 from app.platform.util.security_utils import get_password_hash

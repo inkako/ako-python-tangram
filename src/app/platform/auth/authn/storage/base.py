@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Any
 
-from app.platform.authn.constants import DEFAULT_SESSION_TTL_SECONDS
+from app.platform.auth.authn.constants import DEFAULT_SESSION_TTL_SECONDS
 from pydantic import BaseModel
 
 
