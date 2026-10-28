@@ -1,7 +1,8 @@
-from app.platform.constant.enums import AccountStatusEnum
-from app.platform.database.base import Base, SoftDeletionMixin, TimestampMixin
 from sqlalchemy import BigInteger, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.platform.constant.enums import AccountStatusEnum
+from app.platform.database.base import Base, SoftDeletionMixin, TimestampMixin
 
 
 class User(TimestampMixin, SoftDeletionMixin, Base):
@@ -29,14 +30,3 @@ class User(TimestampMixin, SoftDeletionMixin, Base):
         nullable=False,
     )
 
-
-# class Role(TimestampMixin, SoftDeletionMixin, Base): ...
-#
-#
-# class Permission(TimestampMixin, SoftDeletionMixin, Base): ...
-#
-#
-# class UserRole(TimestampMixin, SoftDeletionMixin, Base): ...
-#
-#
-# class RolePermission(TimestampMixin, SoftDeletionMixin, Base): ...

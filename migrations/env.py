@@ -4,14 +4,13 @@ import logging
 from logging.config import fileConfig
 from pkgutil import walk_packages
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
 from app.platform.config.settings import get_settings
 from app.platform.database.base import Base
-
 
 logger = logging.getLogger(__name__)
 

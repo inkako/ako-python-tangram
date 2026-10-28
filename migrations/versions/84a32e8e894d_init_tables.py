@@ -5,17 +5,16 @@ Revises:
 Create Date: 2026-09-24 15:16:32.441533
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = '84a32e8e894d'
-down_revision: Union[str, Sequence[str], None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -27,7 +26,7 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('is_deleted', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
-    sa.PrimaryKeyConstraint('uuid')
+    sa.PrimaryKeyConstraint('uuid'),
     )
     op.create_table('user',
     sa.Column('id', sa.BigInteger(), autoincrement=True, nullable=False),
@@ -44,7 +43,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('id'),
-    sa.UniqueConstraint('phone')
+    sa.UniqueConstraint('phone'),
     )
     op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
     # ### end Alembic commands ###

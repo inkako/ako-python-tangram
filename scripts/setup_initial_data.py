@@ -1,7 +1,6 @@
 import asyncio
 
-from app.platform.auth.authn import UserCreateSchema
-from app.platform.auth.authn import UserService
+from app.platform.auth.authn import UserCreateSchema, UserService
 from app.platform.config.settings import get_settings
 from app.platform.database.session import local_async_session
 from app.platform.logging import get_logger

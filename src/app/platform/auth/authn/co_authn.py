@@ -1,12 +1,13 @@
-from app.platform.auth.models import User
-from app.platform.auth.authn.repository import UserRepository
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.platform.auth.users.repository import UserRepository
+from app.platform.auth.users.models import User
 from app.platform.constant.enums import AccountStatusEnum
 from app.platform.exception import biz_code
 from app.platform.exception.exceptions import UnauthenticatedError
 from app.platform.logging import get_logger
 from app.platform.util import canonical_utils
 from app.platform.util.security_utils import verify_password
-from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
 
