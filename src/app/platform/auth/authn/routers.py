@@ -3,7 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Request, Response
 
 from app.platform.auth.authn.co_authn import get_co_authn
-from app.platform.auth.authn.dependency import OAuth2FormDep
+from app.platform.auth.authn.dependencies import OAuth2FormDep
 from app.platform.auth.authn.exceptions import ForbiddenException
 from app.platform.dependency import AsyncSessionDep
 from app.platform.logging import get_logger
