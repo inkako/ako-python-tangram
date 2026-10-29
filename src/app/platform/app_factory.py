@@ -2,9 +2,9 @@ from fastapi import APIRouter, FastAPI
 from fastapi.exceptions import RequestValidationError
 
 from app.platform.config.settings import get_settings
-from app.platform.exception.exceptions import BizError
+from app.platform.exception.exceptions import CustomException
 from app.platform.exception.handlers import (
-    biz_exception_handler,
+    domain_exception_handler,
     request_validation_exception_handler,
     unhandled_exception_handler,
 )
@@ -48,7 +48,7 @@ def _register_exception_handlers(app: FastAPI):
     app.add_exception_handler(
         RequestValidationError, request_validation_exception_handler,
     )
-    app.add_exception_handler(BizError, biz_exception_handler)
+    app.add_exception_handler(CustomException, domain_exception_handler)
     app.add_exception_handler(Exception, unhandled_exception_handler)
 
     logger.debug("exception handlers registered")

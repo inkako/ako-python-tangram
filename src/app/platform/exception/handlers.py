@@ -1,16 +1,19 @@
+from typing import Any
+
+from fastapi import HTTPException
 from fastapi.exceptions import RequestValidationError
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.platform.exception.exceptions import BizError
+from app.platform.exception.exceptions import DomainError
 from app.platform.logging import get_logger
 
 logger = get_logger(__name__)
 
 
 async def request_validation_exception_handler(
-    request: Request, exc: RequestValidationError,
+        request: Request, exc: RequestValidationError,
 ):
     """
     Request validation exception handler.
@@ -27,12 +30,12 @@ async def request_validation_exception_handler(
     )
 
 
-async def biz_exception_handler(request: Request, exc: BizError):
+async def domain_exception_handler(request: Request, exc: DomainError):
     """
     Business exception handler.
     """
     logger.warning(
-        f"Biz exception on {request.method} {request.url.path} {type(exc).__name__}: {exc}",
+        f"Domain exception on {request.method} {request.url.path} {type(exc).__name__}: {exc}",
         # exc_info=exc,
     )
     return JSONResponse(
@@ -40,7 +43,29 @@ async def biz_exception_handler(request: Request, exc: BizError):
         content={
             "code": exc.code,
             "message": str(exc),
+            "request_id": exc.request_id,
         },
+    )
+
+
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Business exception handler.
+    """
+    logger.warning(
+        f"HTTP exception on {request.method} {request.url.path} {type(exc).__name__}: {exc}",
+        # exc_info=exc,
+    )
+
+    content: dict[str, Any] = {"message": exc.detail, "request_id": "request_id"}
+    code = getattr(exc, "code", None)
+    if code:
+        content["code"] = code
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=content,
+        headers=exc.headers,
     )
 
 
