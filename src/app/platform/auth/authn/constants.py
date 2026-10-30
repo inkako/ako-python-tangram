@@ -5,3 +5,8 @@ SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
 # --- session / storage ---------------------------------------------------
 DEFAULT_SESSION_TTL_SECONDS = 30 * SECONDS_PER_MINUTE  # 30 min idle window
+
+
+# Transport type
+TRANSPORT_SESSION="session"
+TRANSPORT_BEARER="bearer"
