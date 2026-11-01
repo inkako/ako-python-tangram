@@ -4,7 +4,6 @@ from fastapi import APIRouter, Request, Response
 
 from app.platform.auth.authn.dependencies import OAuth2FormDep
 from app.platform.auth.authn.exceptions import ForbiddenException
-from app.platform.auth.authn.transports.login import password_login
 from app.platform.dependency import AsyncSessionDep
 from app.platform.logging import get_logger
 from app.platform.util import is_cross_site
@@ -30,8 +29,7 @@ def build_session_routers(transport: "SessionTransport") -> APIRouter:
         if is_cross_site(request):
             raise ForbiddenException("Cross-site login are not allowed.")
 
-        return await password_login(
-            transport,
+        return await transport.password_login(
             db=db,
             request=request,
             response=response,

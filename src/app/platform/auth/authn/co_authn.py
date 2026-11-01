@@ -10,7 +10,10 @@ userRepo = UserRepository(User)
 
 
 class CoAuthn:
-    def __int__(self):
+    def __int__(
+            self,
+
+    ):
         ...
 
 
