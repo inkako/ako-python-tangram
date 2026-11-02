@@ -31,5 +31,4 @@ class SessionTransport(Transport):
             response: Response,
             user: User,
     ) -> dict[str, Any]:
-        pass
-
+        ...

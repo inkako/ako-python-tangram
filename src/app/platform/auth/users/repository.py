@@ -1,6 +1,7 @@
 from app.platform.auth.users.models import User
 from app.platform.auth.users.schemas import UserCreateSchema, UserUpdateSchema
-from app.platform.repository.base import BaseRepository
+from app.platform.repository import BaseRepository
 
 
-class UserRepository(BaseRepository[User, UserCreateSchema, UserUpdateSchema]): ...
+class UserRepository(BaseRepository[User, UserCreateSchema, UserUpdateSchema]):
+    ...

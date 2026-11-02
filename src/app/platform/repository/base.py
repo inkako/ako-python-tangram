@@ -4,9 +4,11 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.platform.database.base import Base
+
 
 class BaseRepository[
-    ModelType,
+    ModelType: Base,
     CreateSchemaType: BaseModel,
     UpdateSchemaType: BaseModel,
 ]:

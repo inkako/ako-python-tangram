@@ -1,6 +1,9 @@
 import asyncio
 
-from app.platform.auth.authn import UserCreateSchema, UserService
+from app.platform.auth.users.models import User
+from app.platform.auth.users.repository import UserRepository
+from app.platform.auth.users.schemas import UserCreateSchema
+from app.platform.auth.users.service import UserService
 from app.platform.config.settings import get_settings
 from app.platform.database.session import local_async_session
 from app.platform.logging import get_logger
@@ -23,7 +26,6 @@ async def create_first_superuser() -> None:
             logger.warning("Admin configuration is incomplete. Please check environment variables.")
             return
 
-        user_service = UserService()
         async with local_async_session() as session:
             user_create_schema = UserCreateSchema(
                 name=name,
@@ -32,6 +34,8 @@ async def create_first_superuser() -> None:
                 username=username,
                 password=password,
             )
+            user_repo = UserRepository(User)
+            user_service = UserService(user_repo)
             created_user = await user_service.create_user(session, user_create_schema)
             logger.info(f"Superuser created successfully: {created_user}")
     except Exception as e:
