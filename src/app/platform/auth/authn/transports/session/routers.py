@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-def build_session_routers(transport: "SessionTransport") -> APIRouter:
+def build_session_routes(transport: "SessionTransport") -> APIRouter:
     router = APIRouter(tags=["authentication"])
 
     @router.post("/login")

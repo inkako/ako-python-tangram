@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,12 +10,10 @@ from starlette.responses import Response
 from app.platform.auth.authn.exceptions import UnauthenticatedException
 from app.platform.auth.authn.principal import Principal
 from app.platform.auth.users.models import User
+from app.platform.auth.users.service import UserService
 from app.platform.constant.enums import AccountStatusEnum
 from app.platform.logging import get_logger
 from app.platform.util import canonical_utils, verify_password
-
-if TYPE_CHECKING:
-    from app.platform.auth.users.service import UserService
 
 logger = get_logger(__name__)
 
@@ -25,14 +23,14 @@ class Transport(ABC):
 
     def __init__(
             self,
-            user_service: "UserService",
+            user_service: UserService,
     ):
         self.user_service = user_service
 
     def contributes_routes(self) -> APIRouter | None:
         return None
 
-    async def authenticate_password(
+    async def _authenticate_password(
             self,
             db: AsyncSession,
             identifier: str,
@@ -59,7 +57,7 @@ class Transport(ABC):
         return user
 
     @abstractmethod
-    async def complete_login(
+    async def _complete_login(
             self,
             request: Request,
             response: Response,
@@ -75,14 +73,14 @@ class Transport(ABC):
             request: Request,
             response: Response,
     ) -> dict[str, Any]:
-        user = await self.authenticate_password(
+        user = await self._authenticate_password(
             db,
             form_data.username,
             form_data.password,
             request=request,
         )
 
-        return await self.complete_login(
+        return await self._complete_login(
             request,
             response,
             user,

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.platform.auth.users.models import User
+from app.platform.auth.users.repository import get_user_repo
 from app.platform.auth.users.schemas import UserCreateSchema
 from app.platform.exception.exceptions import DuplicateValueException
 from app.platform.repository.base import BaseRepository
@@ -52,3 +53,11 @@ class UserService:
             username: str,
     ) -> User:
         return await self.user_repo.get(session, username=username)
+
+
+user_repo = get_user_repo()
+user_service = UserService(user_repo)
+
+
+def get_user_service():
+    return user_service

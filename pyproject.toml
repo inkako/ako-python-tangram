@@ -12,6 +12,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "bcrypt>=5.0.0",
     "fastapi[all]>=0.141.1",
+    "redis[hiredis]>=8.1.0",
     "sqlalchemy>=2.0.54",
 ]
 

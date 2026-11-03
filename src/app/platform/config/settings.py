@@ -21,7 +21,7 @@ def _get_env_path():
 env_path = _get_env_path()
 logger.info(f".env path: {env_path}")
 
-config: Config = Config(env_path)
+config = Config(env_path)
 
 
 class EnvironmentSettings(BaseSettings):
@@ -148,6 +148,30 @@ class DatabaseSettings(BaseSettings):
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DATABASE}"
         )
 
+class RedisSettings(BaseSettings):
+    """
+    Redis settings
+    """
+
+    REDIS_ENABLED: bool = config("REDIS_ENABLED", default=False, cast=bool)
+    REDIS_USER: str = config("REDIS_USER", default="redis")
+    REDIS_PASSWORD: str = config("REDIS_PASSWORD", default="redis")
+    REDIS_SERVER: str = config("REDIS_SERVER", default="localhost")
+    REDIS_PORT: int = config("REDIS_PORT", default=6379, cast=int)
+    REDIS_DATABASE: int = config("REDIS_DATABASE", default=0, cast=int)
+    REDIS_MAX_CONNECTIONS: int = config("REDIS_MAX_CONNECTIONS", default=50, cast=int)
+    REDIS_SOCKET_TIMEOUT: float = config("REDIS_SOCKET_TIMEOUT", default=5.0, cast=float)
+
+    @property
+    def REDIS_URL(self) -> str:
+        direct_url = config("REDIS_URL", default=None)
+        if direct_url:
+            return direct_url
+
+        auth = ""
+        if self.REDIS_PASSWORD:
+            auth = f"{self.REDIS_USER}:{quote_plus(self.REDIS_PASSWORD)}@" if self.REDIS_USER else f":{quote_plus(self.REDIS_PASSWORD)}@"
+        return f"redis://{auth}{self.REDIS_SERVER}:{self.REDIS_PORT}/{self.REDIS_DATABASE}"
 
 class AdminSettings(BaseSettings):
     """
@@ -168,6 +192,7 @@ class Settings(
     WebServerSettings,
     AuthenticationSettings,
     DatabaseSettings,
+    RedisSettings,
     AdminSettings,
 ):
     pass

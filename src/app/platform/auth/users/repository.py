@@ -5,3 +5,10 @@ from app.platform.repository import BaseRepository
 
 class UserRepository(BaseRepository[User, UserCreateSchema, UserUpdateSchema]):
     ...
+
+
+user_repo = UserRepository(User)
+
+
+def get_user_repo():
+    return user_repo

@@ -1,9 +1,7 @@
 import asyncio
 
-from app.platform.auth.users.models import User
-from app.platform.auth.users.repository import UserRepository
 from app.platform.auth.users.schemas import UserCreateSchema
-from app.platform.auth.users.service import UserService
+from app.platform.auth.users.service import get_user_service
 from app.platform.config.settings import get_settings
 from app.platform.database.session import local_async_session
 from app.platform.logging import get_logger
@@ -11,6 +9,7 @@ from app.platform.logging import get_logger
 logger = get_logger(__name__)
 
 settings = get_settings()
+user_service = get_user_service()
 
 
 async def create_first_superuser() -> None:
@@ -34,8 +33,6 @@ async def create_first_superuser() -> None:
                 username=username,
                 password=password,
             )
-            user_repo = UserRepository(User)
-            user_service = UserService(user_repo)
             created_user = await user_service.create_user(session, user_create_schema)
             logger.info(f"Superuser created successfully: {created_user}")
     except Exception as e:
