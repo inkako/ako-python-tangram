@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from abc import abstractmethod, ABC
+from dataclasses import dataclass
+from typing import Literal, Any
 
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
@@ -8,7 +9,6 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.platform.auth.authn.exceptions import UnauthenticatedException
-from app.platform.auth.authn.principal import Principal
 from app.platform.auth.users.models import User
 from app.platform.auth.users.service import UserService
 from app.platform.constant.enums import AccountStatusEnum
@@ -17,15 +17,36 @@ from app.platform.util import canonical_utils, verify_password
 
 logger = get_logger(__name__)
 
+# Transport
+TransportName = Literal["session", "bearer"]
+
+# SameSite
+SameSite = Literal["lax", "strict", "none"]
+
+
+@dataclass
+class CookieConfig:
+    samesite: SameSite
+    secure: bool
+    httponly: bool
+    path: str
+
+
+@dataclass(frozen=True)
+class Principal:
+    user_id: Any
+    user: Any = None
+    is_superuser: bool = False
+
 
 class Transport(ABC):
-    name: str = "_abc_transport_"
-
     def __init__(
             self,
             user_service: UserService,
     ):
         self.user_service = user_service
+
+    name: TransportName | None = None
 
     def contributes_routes(self) -> APIRouter | None:
         return None

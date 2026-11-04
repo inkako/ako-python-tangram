@@ -26,6 +26,7 @@ class SessionManager:
             session_timeout_minutes: int,
             absolute_timeout_hours: int | None = None,
 
+
     ):
         self.store = store
         self.csrf = csrf

@@ -4,8 +4,10 @@ from fastapi import APIRouter
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.platform.auth.authn.constants import TRANSPORT
 from app.platform.auth.authn.principal import Principal
 from app.platform.auth.authn.transport import Transport
+from app.platform.auth.authn.transports import session
 from app.platform.auth.authn.transports.session.manager import SessionManager
 from app.platform.auth.authn.transports.session.routers import build_session_routes
 from app.platform.auth.users.models import User
@@ -26,6 +28,8 @@ class SessionTransport(Transport):
         self.store = store
         self.csrf = csrf
         self.manager = SessionManager(store=store)
+
+    name: TRANSPORT = session
 
     @override
     def contributes_routes(self) -> APIRouter | None:
