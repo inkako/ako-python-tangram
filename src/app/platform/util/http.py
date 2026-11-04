@@ -15,3 +15,9 @@ def is_cross_site(request: Request) -> bool:
         bool: True if the request is cross-site, False otherwise.
     """
     return request.headers.get("sec-fetch-site") == "cross-site"
+
+
+def get_client_ip(request: Request) -> str:
+    if request.client is not None:
+        return request.client.host
+    return "unknown"

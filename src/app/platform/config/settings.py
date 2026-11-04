@@ -29,7 +29,7 @@ class EnvironmentSettings(BaseSettings):
     Environment settings
     """
 
-    ENV: EnvEnum = config("ENV", default=EnvEnum.DEV, cast=EnvEnum)
+    ENV: EnvEnum = config("ENV", default=EnvEnum.LOCAL, cast=EnvEnum)
 
 
 class ApplicationSettings(BaseSettings):
@@ -113,6 +113,7 @@ class AuthenticationSettings(BaseSettings):
     SESSION_TIMEOUT_MINUTES: int = config(
         "SESSION_TIMEOUT_MINUTES", default=30, cast=int,
     )
+    SESSION_STORAGE: str = config("SESSION_STORAGE", default="redis")
 
     # csrf settings
     CSRF_PROTECTION_ENABLED: bool = config(

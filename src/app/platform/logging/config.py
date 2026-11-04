@@ -18,7 +18,7 @@ def _configure_logger_handlers(settings: Settings) -> None:
     """Configure logger handlers."""
     # determine format type based on environment
     format_type: LogFormatterTypeEnum
-    if settings.ENV == EnvEnum.DEV:
+    if settings.ENV == EnvEnum.LOCAL:
         format_type = LogFormatterTypeEnum.SIMPLE
     elif settings.ENV == EnvEnum.TEST:
         format_type = LogFormatterTypeEnum.DETAILED
