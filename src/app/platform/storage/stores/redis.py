@@ -40,8 +40,8 @@ class RedisStore[T: BaseModel](AbstractStore[T]):
     async def delete(
             self,
             key: str,
-    ):
-        await self.client.delete(key)
+    ) -> int:
+        return await self.client.delete(key)
 
     @override
     async def sadd(
@@ -63,10 +63,10 @@ class RedisStore[T: BaseModel](AbstractStore[T]):
             self,
             key: str,
             member: Any,
-    ):
+    ) -> int:
         if isinstance(member, BaseModel):
             member = member.model_dump_json().encode("utf-8")
-        await self.client.srem(key, member)
+        return await self.client.srem(key, member)
 
 
 settings = get_settings()

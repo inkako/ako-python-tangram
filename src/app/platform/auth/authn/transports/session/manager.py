@@ -135,7 +135,7 @@ class SessionManager:
     async def _index_user_sessions(
             self,
             user_id: str,
-            session_id: str,
+            session_id_raw: str,
             expiration: int,
     ):
         """Index user sessions."""
@@ -143,7 +143,7 @@ class SessionManager:
         ttl = expiration + USER_INDEX_TTL_BUFFER_SECONDS
         await self.store.sadd(
             key=user_index_key,
-            member=session_id,
+            member=session_id_raw,
             expiration=ttl,
         )
 
@@ -184,7 +184,7 @@ class SessionManager:
             else self.timeout_for_seconds(session_data.metadata)
         )
 
-        session_data.session_id = session_id_raw
+        session_data.session_id_raw = session_id_raw
 
         csrf_token: str = ""
         if self.csrf_enabled:
@@ -193,7 +193,7 @@ class SessionManager:
 
         await self._index_user_sessions(
             user_id=user_id,
-            session_id=session_id_raw,
+            session_id_raw=session_id_raw,
             expiration=ttl,
         )
 
@@ -219,17 +219,22 @@ class SessionManager:
 
     async def _terminate(
             self,
-            storage_key: str,
+            session_storage_key: str,
             session_data: SessionData,
             reason: str | None = None
     ) -> bool:
         logger.warning("Terminating session %s for user %s (reason=%s)",
-                       self._handle_of(storage_key), session_data.user_id, reason=reason)
+                       self._handle_of(session_storage_key), session_data.user_id, reason=reason)
         # delete session
-
-        # delete index
-
+        delete = await self.store.delete(session_storage_key)
+        if delete:
+            # delete index
+            await self.store.srem(
+                key=self._user_index_storage_key(session_data.user_id),
+                member=session_data.session_id_raw,
+            )
         # delete csrf
+        ...
 
     # ======================================================================
     # session limit enforcement & cleanup

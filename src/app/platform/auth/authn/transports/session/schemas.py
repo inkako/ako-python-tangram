@@ -8,7 +8,7 @@ from app.platform.util import utcnow
 
 class SessionData(BaseModel):
     user_id: str
-    session_id: str = "Unset"
+    session_id_raw: str = "Unset"
     ip_addr: str = ""
     user_agent: str = ""
     device_info: dict[str, Any] = Field(default_factory=dict)

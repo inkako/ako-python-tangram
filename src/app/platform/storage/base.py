@@ -27,7 +27,7 @@ class AbstractStore[T: BaseModel](ABC):
     async def delete(
             self,
             key: str,
-    ):
+    ) -> bool:
         ...
 
     @abstractmethod
@@ -44,5 +44,5 @@ class AbstractStore[T: BaseModel](ABC):
             self,
             key: str,
             member: Any,
-    ):
+    ) -> int:
         ...
