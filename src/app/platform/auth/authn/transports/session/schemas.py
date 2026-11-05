@@ -26,3 +26,9 @@ class UserAgentInfo(BaseModel):
     is_mobile: bool = False
     is_tablet: bool = False
     is_pc: bool = False
+
+
+class CSRFToken(BaseModel):
+    token: str
+    session_id: str
+    expiry: datetime

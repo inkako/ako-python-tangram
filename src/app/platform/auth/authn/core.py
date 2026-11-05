@@ -1,6 +1,6 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Literal, Any
+from typing import Any, Literal
 
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,7 +13,7 @@ from app.platform.auth.users.models import User
 from app.platform.auth.users.service import UserService
 from app.platform.constant.enums import AccountStatusEnum
 from app.platform.logging import get_logger
-from app.platform.util import canonical_utils, verify_password
+from app.platform.util import canonical_identifier, verify_password
 
 logger = get_logger(__name__)
 
@@ -26,16 +26,15 @@ SameSite = Literal["lax", "strict", "none"]
 
 @dataclass
 class CookieConfig:
-    samesite: SameSite
     secure: bool
-    httponly: bool
+    samesite: SameSite
     path: str
 
 
 @dataclass(frozen=True)
 class Principal:
     user_id: Any
-    user: Any = None
+    user: User = None
     is_superuser: bool = False
 
 
@@ -59,7 +58,7 @@ class Transport(ABC):
             *,
             request: Request,
     ) -> User:
-        login_id = canonical_utils.canonical_identifier(identifier)
+        login_id = canonical_identifier(identifier)
 
         user = await self.user_service.get(db, username=login_id)
         if user is None:

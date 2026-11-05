@@ -7,30 +7,66 @@ from app.platform.config.settings import get_settings
 from app.platform.storage.base import AbstractStore
 
 
-class RedisStore[ValueModel: BaseModel](AbstractStore[ValueModel]):
+class RedisStore[T: BaseModel](AbstractStore[T]):
     def __init__(self, url: str):
         self.client = Redis.from_url(url, decode_responses=False)
 
     @override
-    async def create(
+    async def set(
             self,
             key: str,
-            data: ValueModel,
+            data: Any,
             expiration: int,
     ) -> Any:
-        payload = data.model_dump_json().encode()
+        payload = data
+        if isinstance(data, BaseModel):
+            payload = data.model_dump_json().encode("utf-8")
         await self.client.set(key, payload, ex=expiration)
 
     @override
-    async def retrieve(
+    async def get(
             self,
             key: str,
-            model_class: type[ValueModel],
-    ) -> ValueModel | None:
+            model_class: type[T] | None = None,
+    ) -> BaseModel | str | None:
         raw = await self.client.get(key)
         if raw is None:
             return None
-        return model_class.model_validate_json(raw)
+        if model_class is not None and issubclass(model_class, BaseModel):
+            return model_class.model_validate_json(raw)
+        return raw.decode("utf-8")
+
+    @override
+    async def delete(
+            self,
+            key: str,
+    ):
+        await self.client.delete(key)
+
+    @override
+    async def sadd(
+            self,
+            key: str,
+            member: Any,
+            expiration: int,
+    ):
+        if isinstance(member, BaseModel):
+            member = member.model_dump_json().encode("utf-8")
+        async with self.client.pipeline(transaction=True) as pipe:
+            pipe.sadd(key, member)
+            pipe.expire(key, expiration, nx=True)
+            pipe.expire(key, expiration, gt=True)
+            await pipe.execute()
+
+    @override
+    async def srem(
+            self,
+            key: str,
+            member: Any,
+    ):
+        if isinstance(member, BaseModel):
+            member = member.model_dump_json().encode("utf-8")
+        await self.client.srem(key, member)
 
 
 settings = get_settings()

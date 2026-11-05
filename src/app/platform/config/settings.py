@@ -113,7 +113,12 @@ class AuthenticationSettings(BaseSettings):
     SESSION_TIMEOUT_MINUTES: int = config(
         "SESSION_TIMEOUT_MINUTES", default=30, cast=int,
     )
+    MAX_SESSIONS_PER_USER: int = config("MAX_SESSIONS_PER_USER", default=1, cast=int)
+    REMEMBER_ME_ENABLED: bool = config("REMEMBER_ME_ENABLED", default=False, cast=bool)
+    REMEMBER_ME_DAYS: int = config("REMEMBER_ME_DAYS", default=7, cast=int)
     SESSION_STORAGE: str = config("SESSION_STORAGE", default="redis")
+    SESSION_STORAGE_KEY_PREFIX: str = config("SESSION_STORAGE_KEY_PREFIX", default="session:")
+    CSRF_STORAGE_KEY_PREFIX: str = config("CSRF_STORAGE_KEY_PREFIX", default="csrf:")
 
     # csrf settings
     CSRF_PROTECTION_ENABLED: bool = config(

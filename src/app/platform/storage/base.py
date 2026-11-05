@@ -4,21 +4,45 @@ from typing import Any
 from pydantic import BaseModel
 
 
-class AbstractStore[ValueModel: BaseModel](ABC):
+class AbstractStore[T: BaseModel](ABC):
 
     @abstractmethod
-    async def create(
+    async def set(
             self,
             key: str,
-            data: ValueModel,
+            data: Any,
             expiration: int,
     ) -> Any:
         ...
 
     @abstractmethod
-    async def retrieve(
+    async def get(
             self,
             key: str,
-            model_class: type[ValueModel],
-    ) -> ValueModel | None:
+            model_class: type[T] | None = None,
+    ) -> T | None:
+        ...
+
+    @abstractmethod
+    async def delete(
+            self,
+            key: str,
+    ):
+        ...
+
+    @abstractmethod
+    async def sadd(
+            self,
+            key: str,
+            member: Any,
+            expiration: int,
+    ):
+        ...
+
+    @abstractmethod
+    async def srem(
+            self,
+            key: str,
+            member: Any,
+    ):
         ...
