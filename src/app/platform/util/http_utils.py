@@ -21,3 +21,6 @@ def get_client_ip(request: Request) -> str:
     if request.client is not None:
         return request.client.host
     return "unknown"
+
+def get_user_agent(request: Request) -> str:
+    return request.headers.get("user-agent", "")

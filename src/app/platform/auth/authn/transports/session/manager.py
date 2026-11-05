@@ -18,9 +18,12 @@ from app.platform.auth.authn.constants import (
 )
 from app.platform.auth.authn.transports.session.schemas import CSRFToken, SessionData, UserAgentInfo
 from app.platform.config.settings import get_settings
+from app.platform.logging import get_logger
 from app.platform.storage.base import AbstractStore
 from app.platform.util import utcnow
 from app.platform.util.http_utils import get_client_ip
+
+logger = get_logger(__name__)
 
 settings = get_settings()
 
@@ -77,6 +80,11 @@ class SessionManager:
     def _csrf_key(self, token: str) -> str:
         return self._keyed(b'csrf:', token)
 
+    def _handle_of(self, key: str) -> str:
+        if self.key_secret is None:
+            return hashlib.sha256(key.encode()).hexdigest()
+        return key
+
     @staticmethod
     def _generate_session_id() -> str:
         return str(uuid4())
@@ -85,11 +93,15 @@ class SessionManager:
     def _generate_csrf_token() -> str:
         return secrets.token_hex(CSRF_TOKEN_BYTES)
 
-    def _get_session_storage_key(self, key: str) -> str:
-        return f"{self.session_key_prefix}{key}"
+    def _get_session_storage_key(self, key: str, *, is_raw: bool = True) -> str:
+        if is_raw:
+            return f"{self.session_key_prefix}{key}"
+        return f"{self.session_key_prefix}{self._session_key(key)}"
 
-    def _get_csrf_storage_key(self, key: str) -> str:
-        return f"{self.csrf_key_prefix}{key}"
+    def _get_csrf_storage_key(self, key: str, *, is_raw: bool = True) -> str:
+        if is_raw:
+            return f"{self.csrf_key_prefix}{key}"
+        return f"{self.csrf_key_prefix}{self._csrf_key(key)}"
 
     def _user_index_storage_key(self, user_id: str) -> str:
         user_index_prefix = f"{self.session_key_prefix}{USER_INDEX_SUFFIX}"
@@ -193,9 +205,31 @@ class SessionManager:
 
         return session_id, csrf_token
 
-    async def terminate_session(self, session_id: str):
+    async def terminate_session(
+            self,
+            session_id: str,
+            reason: str | None = None
+    ) -> bool:
         """Terminate an existing session."""
+        session_storage_key = self._get_session_storage_key(session_id, is_raw=False)
+        session_data = await self.store.get(session_storage_key, SessionData)
+        if session_data is None:
+            return False
+        return await self._terminate(session_storage_key, session_data, reason)
 
+    async def _terminate(
+            self,
+            storage_key: str,
+            session_data: SessionData,
+            reason: str | None = None
+    ) -> bool:
+        logger.warning("Terminating session %s for user %s (reason=%s)",
+                       self._handle_of(storage_key), session_data.user_id, reason=reason)
+        # delete session
+
+        # delete index
+
+        # delete csrf
 
     # ======================================================================
     # session limit enforcement & cleanup
