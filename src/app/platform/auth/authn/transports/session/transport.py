@@ -1,6 +1,7 @@
 from typing import Any, override
 
 from fastapi import APIRouter
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -17,15 +18,39 @@ class SessionTransport(Transport):
     def __init__(
             self,
             *,
-            store: AbstractStore,
-            csrf: bool = True,
             user_service: UserService,
-
+            store: AbstractStore,
+            csrf_enabled: bool,
+            session_key_prefix: str,
+            csrf_key_prefix: str | None = None,
+            key_secret: str | None = None,
+            session_timeout_minutes: int,
+            absolute_timeout_enabled: bool | None = None,
+            absolute_timeout_hours: int | None = None,
+            remember_me_enabled: bool | None = None,
+            remember_me_days: int | None = None,
+            max_sessions_per_user: int | None = None,
+            cookie_secure: bool = True,
+            cookie_samesite: str = "lax",
+            cookie_path: str = "/",
     ):
         super().__init__(user_service=user_service)
-        self.store = store
-        self.csrf = csrf
-        self.manager = SessionManager(store=store)
+        self.manager = SessionManager(
+            store,
+            csrf_enabled = csrf_enabled,
+            session_key_prefix = session_key_prefix,
+            csrf_key_prefix = csrf_key_prefix,
+            key_secret = key_secret,
+            session_timeout_minutes = session_timeout_minutes,
+            absolute_timeout_enabled = absolute_timeout_enabled,
+            absolute_timeout_hours = absolute_timeout_hours,
+            remember_me_enabled = remember_me_enabled,
+            remember_me_days = remember_me_days,
+            max_sessions_per_user = max_sessions_per_user,
+            cookie_secure = cookie_secure,
+            cookie_samesite = cookie_samesite,
+            cookie_path = cookie_path,
+        )
 
     name: TransportName = session
 
@@ -34,11 +59,23 @@ class SessionTransport(Transport):
         return build_session_routes(self)
 
     @override
+    async def _authenticate_password(
+            self,
+            db: AsyncSession,
+            identifier: str,
+            password: str,
+            *,
+            request: Request,
+    ) -> User:
+        return await super()._authenticate_password(db, identifier, password, request=request)
+
+    @override
     async def _complete_login(
             self,
             request: Request,
             response: Response,
             user: User,
+            options: dict[str, Any],
     ) -> dict[str, Any]:
         ...
 

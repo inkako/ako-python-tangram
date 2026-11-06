@@ -82,6 +82,7 @@ class Transport(ABC):
             request: Request,
             response: Response,
             user: User,
+            options: dict[str, Any],
     ) -> dict[str, Any]:
         raise NotImplementedError(f"The {self.name!r} transport doesn't issue login credentials.")
 
@@ -92,6 +93,7 @@ class Transport(ABC):
             *,
             request: Request,
             response: Response,
+            options: dict[str, Any],
     ) -> dict[str, Any]:
         user = await self._authenticate_password(
             db,
@@ -104,6 +106,7 @@ class Transport(ABC):
             request,
             response,
             user,
+            options,
         )
 
     @abstractmethod

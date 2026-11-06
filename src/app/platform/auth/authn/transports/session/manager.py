@@ -158,8 +158,10 @@ class SessionManager:
         """Create a new session."""
         presented = request.headers.get(SESSION_COOKIE_NAME, "")
         if presented:
-            await self.terminate_session(presented)
-        await self._enforce_session_limit(user_id)
+            await self.terminate_session(presented, "replaced by new session")
+
+        if self.max_sessions_per_user is not None:
+            await self._enforce_session_limit(user_id)
 
         user_agent = request.headers.get("user-agent", "")
         device_info = self._parse_user_agent(user_agent)
@@ -191,17 +193,9 @@ class SessionManager:
             csrf_token, csrf_token_raw = self._create_csrf_token(session_id_raw, ttl)
             session_data.metadata[CSRF_TOKEN_ID_META_KEY] = csrf_token_raw
 
-        await self._index_user_sessions(
-            user_id=user_id,
-            session_id_raw=session_id_raw,
-            expiration=ttl,
-        )
+        await self._index_user_sessions(user_id=user_id, session_id_raw=session_id_raw, expiration=ttl)
 
-        await self.store.set(
-            key=session_storage_key,
-            data=session_data,
-            expiration=ttl,
-        )
+        await self.store.set(key=session_storage_key, data=session_data, expiration=ttl)
 
         return session_id, csrf_token
 
@@ -224,7 +218,7 @@ class SessionManager:
             reason: str | None = None
     ) -> bool:
         logger.warning("Terminating session %s for user %s (reason=%s)",
-                       self._handle_of(session_storage_key), session_data.user_id, reason=reason)
+                       self._handle_of(session_data.session_id_raw), session_data.user_id, reason=reason)
         # delete session
         delete = await self.store.delete(session_storage_key)
         if delete:
@@ -234,13 +228,40 @@ class SessionManager:
                 member=session_data.session_id_raw,
             )
         # delete csrf
-        ...
+        if self.csrf_enabled:
+            csrf_storage_key = self._get_csrf_storage_key(session_data.metadata[CSRF_TOKEN_ID_META_KEY])
+            await self.store.delete(csrf_storage_key)
+
+        return delete
 
     # ======================================================================
     # session limit enforcement & cleanup
     # ======================================================================
+    async def _user_session_ids(self, user_id: str) -> list[str]:
+        return await self.store.smembers(self._user_index_storage_key(user_id))
+
+    async def _user_sessions(self, user_id: str) -> list[tuple[str, SessionData]]:
+        sessions: list[tuple[str, SessionData]] = []
+        for session_id_raw in await self._user_session_ids(user_id):
+            session_storage_key = self._get_session_storage_key(session_id_raw, is_raw=False)
+            session_data = await self.store.get(session_storage_key, SessionData)
+            if session_data is None:
+                await self.store.srem(self._user_index_storage_key(user_id), session_id_raw)
+            sessions.append((session_id_raw, session_data))
+        return sessions
+
     async def _enforce_session_limit(self, user_id: str):
         """Enforce the maximum number of sessions per user."""
+        sessions = await self._user_sessions(user_id)
+        if len(sessions) >= self.max_sessions_per_user:
+            sessions.sort(key=lambda pair: pair[1].last_activity)
+            excess = len(sessions) + 1 - self.max_sessions_per_user
+            for session_id_raw, session_data in sessions[:excess]:
+                await self._terminate(
+                    session_storage_key=self._get_session_storage_key(session_id_raw),
+                    session_data=session_data,
+                    reason="exceeded maximum number of sessions",
+                )
 
     # ======================================================================
     # CSRF

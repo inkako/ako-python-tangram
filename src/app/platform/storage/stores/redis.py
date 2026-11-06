@@ -58,6 +58,12 @@ class RedisStore[T: BaseModel](AbstractStore[T]):
             pipe.expire(key, expiration, gt=True)
             await pipe.execute()
 
+    async def smembers(self, key: str, model_class: type[T] | None = None) -> list[Any]:
+        members = await self.client.smembers(key)
+        if model_class is not None and issubclass(model_class, BaseModel):
+            return [model_class.model_validate_json(m) for m in members]
+        return [m.decode("utf-8") for m in members]
+
     @override
     async def srem(
             self,

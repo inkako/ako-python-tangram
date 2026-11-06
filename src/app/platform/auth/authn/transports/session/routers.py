@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Annotated
 
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request, Response, Form
 
 from app.platform.auth.authn.dependencies import OAuth2FormDep
 from app.platform.auth.authn.exceptions import ForbiddenException
@@ -23,6 +23,7 @@ def build_session_routes(transport: "SessionTransport") -> APIRouter:
             response: Response,
             form_data: OAuth2FormDep,
             db: AsyncSessionDep,
+            remember_me: Annotated[bool, Form()] = False,
     ) -> dict[str, Any]:
         """Login endpoint to get session cookies."""
 

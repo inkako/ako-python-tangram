@@ -40,6 +40,13 @@ class AbstractStore[T: BaseModel](ABC):
         ...
 
     @abstractmethod
+    async def smembers(
+            self,
+            key: str,
+    ) -> list[Any]:
+        ...
+
+    @abstractmethod
     async def srem(
             self,
             key: str,
