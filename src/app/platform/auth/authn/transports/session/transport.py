@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY
 from app.platform.auth.authn.core import Principal, Transport, TransportName
 from app.platform.auth.authn.transports import session
 from app.platform.auth.authn.transports.session.manager import SessionManager
@@ -77,7 +78,27 @@ class SessionTransport(Transport):
             user: User,
             options: dict[str, Any],
     ) -> dict[str, Any]:
-        ...
+        remember_me = bool(options.get("remember_me"))
+        metadata = dict(options.get("metadata") or {})
+        if remember_me:
+            metadata[REMEMBER_ME_META_KEY] = remember_me
+
+        session_id, csrf = await self.manager.create_session(
+            request,
+            user.id,
+            metadata=metadata,
+            token_version=user.token_version,
+        )
+
+        cookie_max_age = self.manager.timeout_for_seconds(metadata) if remember_me else None
+
+        self.manager.set_session_cookies(response, session_id, csrf, cookie_max_age)
+
+        return {
+            "id":user.id,
+            "username":user.name,
+            "csrf_token": csrf,
+        }
 
     async def authenticate(self, request: Request) -> Principal | None:
         pass

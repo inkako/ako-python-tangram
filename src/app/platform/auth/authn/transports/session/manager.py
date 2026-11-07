@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from starlette.requests import Request
+from starlette.responses import Response
 from user_agents import parse as _ua_parse
 
 from app.platform.auth.authn.constants import (
@@ -15,7 +16,9 @@ from app.platform.auth.authn.constants import (
     USER_INDEX_TTL_BUFFER_SECONDS,
     SESSION_COOKIE_NAME,
     CSRF_TOKEN_ID_META_KEY,
+    CSRF_COOKIE_NAME,
 )
+from app.platform.auth.authn.core import SameSite
 from app.platform.auth.authn.transports.session.schemas import CSRFToken, SessionData, UserAgentInfo
 from app.platform.config.settings import get_settings
 from app.platform.logging import get_logger
@@ -44,7 +47,7 @@ class SessionManager:
             remember_me_days: int | None = None,
             max_sessions_per_user: int | None = None,
             cookie_secure: bool = True,
-            cookie_samesite: str = "lax",
+            cookie_samesite: SameSite = "lax",
             cookie_path: str = "/",
     ):
         self.store = store
@@ -103,7 +106,7 @@ class SessionManager:
             return f"{self.csrf_key_prefix}{key}"
         return f"{self.csrf_key_prefix}{self._csrf_key(key)}"
 
-    def _user_index_storage_key(self, user_id: str) -> str:
+    def _user_index_storage_key(self, user_id: Any) -> str:
         user_index_prefix = f"{self.session_key_prefix}{USER_INDEX_SUFFIX}"
         return f"{user_index_prefix}{user_id}"
 
@@ -134,7 +137,7 @@ class SessionManager:
 
     async def _index_user_sessions(
             self,
-            user_id: str,
+            user_id: Any,
             session_id_raw: str,
             expiration: int,
     ):
@@ -150,7 +153,7 @@ class SessionManager:
     async def create_session(
             self,
             request: Request,
-            user_id: str,
+            user_id: Any,
             metadata: dict[str, Any] | None = None,
             expiration_seconds: int | None = None,
             token_version: int | None = None,
@@ -237,7 +240,7 @@ class SessionManager:
     # ======================================================================
     # session limit enforcement & cleanup
     # ======================================================================
-    async def _user_session_ids(self, user_id: str) -> list[str]:
+    async def _user_session_ids(self, user_id: Any) -> list[str]:
         return await self.store.smembers(self._user_index_storage_key(user_id))
 
     async def _user_sessions(self, user_id: str) -> list[tuple[str, SessionData]]:
@@ -250,7 +253,7 @@ class SessionManager:
             sessions.append((session_id_raw, session_data))
         return sessions
 
-    async def _enforce_session_limit(self, user_id: str):
+    async def _enforce_session_limit(self, user_id: Any):
         """Enforce the maximum number of sessions per user."""
         sessions = await self._user_sessions(user_id)
         if len(sessions) >= self.max_sessions_per_user:
@@ -290,3 +293,33 @@ class SessionManager:
     # ======================================================================
     # cookies
     # ======================================================================
+    def set_session_cookies(
+            self,
+            response: Response,
+            session_id: str,
+            csrf_token: str,
+            cookie_max_age: int | None = None,
+    ):
+        response.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=session_id,
+            max_age=cookie_max_age,
+            path=self.cookie_path,
+            secure=self.cookie_secure,
+            samesite=self.cookie_samesite,
+            httponly=True,
+        )
+        self.set_csrf_cookie(response, csrf_token, cookie_max_age)
+
+    def set_csrf_cookie(self, response, csrf_token, cookie_max_age):
+        if not csrf_token:
+            return
+        response.set_cookie(
+            key=CSRF_COOKIE_NAME,
+            value=csrf_token,
+            max_age=cookie_max_age,
+            path=self.cookie_path,
+            secure=self.cookie_secure,
+            samesite=self.cookie_samesite,
+            httponly=False,
+        )
