@@ -306,12 +306,12 @@ class SessionManager:
             max_age=cookie_max_age,
             path=self.cookie_path,
             secure=self.cookie_secure,
-            samesite=self.cookie_samesite,
             httponly=True,
+            samesite=self.cookie_samesite,
         )
-        self.set_csrf_cookie(response, csrf_token, cookie_max_age)
+        self._set_csrf_cookie(response, csrf_token, cookie_max_age)
 
-    def set_csrf_cookie(self, response, csrf_token, cookie_max_age):
+    def _set_csrf_cookie(self, response, csrf_token, cookie_max_age):
         if not csrf_token:
             return
         response.set_cookie(
@@ -320,6 +320,6 @@ class SessionManager:
             max_age=cookie_max_age,
             path=self.cookie_path,
             secure=self.cookie_secure,
-            samesite=self.cookie_samesite,
             httponly=False,
+            samesite=self.cookie_samesite,
         )

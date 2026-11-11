@@ -53,7 +53,7 @@ class SessionTransport(Transport):
             cookie_path = cookie_path,
         )
 
-    name: TransportName = session
+    name: TransportName = "session"
 
     @override
     def contributes_routes(self) -> APIRouter | None:

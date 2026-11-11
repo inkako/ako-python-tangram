@@ -45,7 +45,7 @@ class Transport(ABC):
     ):
         self.user_service = user_service
 
-    name: TransportName | None = None
+    name: TransportName = "transport"
 
     def contributes_routes(self) -> APIRouter | None:
         return None
