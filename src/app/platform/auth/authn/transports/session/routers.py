@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
-from fastapi import APIRouter, Request, Response, Form
+from fastapi import APIRouter, Form, Request, Response
 
 from app.platform.auth.authn.dependencies import OAuth2FormDep
 from app.platform.auth.authn.exceptions import ForbiddenException

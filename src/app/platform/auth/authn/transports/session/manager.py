@@ -10,13 +10,13 @@ from starlette.responses import Response
 from user_agents import parse as _ua_parse
 
 from app.platform.auth.authn.constants import (
+    CSRF_COOKIE_NAME,
     CSRF_TOKEN_BYTES,
+    CSRF_TOKEN_ID_META_KEY,
     REMEMBER_ME_META_KEY,
+    SESSION_COOKIE_NAME,
     USER_INDEX_SUFFIX,
     USER_INDEX_TTL_BUFFER_SECONDS,
-    SESSION_COOKIE_NAME,
-    CSRF_TOKEN_ID_META_KEY,
-    CSRF_COOKIE_NAME,
 )
 from app.platform.auth.authn.core import SameSite
 from app.platform.auth.authn.transports.session.schemas import CSRFToken, SessionData, UserAgentInfo
@@ -205,7 +205,7 @@ class SessionManager:
     async def terminate_session(
             self,
             session_id: str,
-            reason: str | None = None
+            reason: str | None = None,
     ) -> bool:
         """Terminate an existing session."""
         session_storage_key = self._get_session_storage_key(session_id, is_raw=False)
@@ -218,7 +218,7 @@ class SessionManager:
             self,
             session_storage_key: str,
             session_data: SessionData,
-            reason: str | None = None
+            reason: str | None = None,
     ) -> bool:
         logger.warning("Terminating session %s for user %s (reason=%s)",
                        self._handle_of(session_data.session_id_raw), session_data.user_id, reason=reason)

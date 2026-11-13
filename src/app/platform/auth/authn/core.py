@@ -31,6 +31,13 @@ class CookieConfig:
     path: str
 
 
+@dataclass
+class AuthContext:
+    request: Request
+    db_session: AsyncSession
+    enforce_csrf: bool
+
+
 @dataclass(frozen=True)
 class Principal:
     user_id: Any
@@ -93,7 +100,7 @@ class Transport(ABC):
             *,
             request: Request,
             response: Response,
-            options: dict[str, Any],
+            options: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         user = await self._authenticate_password(
             db,
