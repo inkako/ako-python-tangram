@@ -6,7 +6,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY
-from app.platform.auth.authn.core import Principal, SameSite, Transport, TransportName
+from app.platform.auth.authn.core import AuthContext, Principal, SameSite, Transport, TransportName
 from app.platform.auth.authn.transports.session.manager import SessionManager
 from app.platform.auth.authn.transports.session.routers import build_session_routes
 from app.platform.auth.users.models import User
@@ -99,5 +99,5 @@ class SessionTransport(Transport):
             "csrf_token": csrf,
         }
 
-    async def authenticate(self, request: Request) -> Principal | None:
+    async def authenticate(self, auth_context: AuthContext) -> Principal | None:
         pass

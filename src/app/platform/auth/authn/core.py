@@ -119,6 +119,6 @@ class Transport(ABC):
     @abstractmethod
     async def authenticate(
             self,
-            request: Request,
+            auth_context: AuthContext,
     ) -> Principal | None:
         raise NotImplementedError(f"The {self.name!r} transport doesn't implement authenticate method.")

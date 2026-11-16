@@ -1,6 +1,7 @@
-from app.platform.auth.authn.core import Transport, Principal
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
+
+from app.platform.auth.authn.core import AuthContext, Principal, Transport
 
 
 class PrincipalResolver:
@@ -14,6 +15,23 @@ class PrincipalResolver:
             self,
             request: Request,
             db_session: AsyncSession,
-            transport: Transport
+            transport: Transport,
+            *,
+            enforce_csrf: bool = True,
     ) -> Principal:
-        ...
+        """Resolve the principal for the given request and transport."""
+        # cache todo
+
+        # construct an authentication context
+        ctx = self._auth_ctx(request, db_session, enforce_csrf)
+
+        # get principal by authenticate with transport
+        return await transport.authenticate(ctx)
+
+    @classmethod
+    def _auth_ctx(cls, request: Request, db_session: AsyncSession, enforce_csrf: bool):
+        return AuthContext(
+            request=request,
+            db_session=db_session,
+            enforce_csrf=enforce_csrf,
+        )
