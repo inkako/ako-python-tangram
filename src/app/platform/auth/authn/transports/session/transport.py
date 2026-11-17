@@ -89,7 +89,7 @@ class SessionTransport(Transport):
             token_version=user.token_version,
         )
 
-        cookie_max_age = self.manager.timeout_for_seconds(metadata) if remember_me else None
+        cookie_max_age = self.manager.timeout_seconds_for(metadata) if remember_me else None
 
         self.manager.set_session_cookies(response, session_id, csrf_token, cookie_max_age)
 

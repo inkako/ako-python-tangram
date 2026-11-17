@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -20,15 +20,12 @@ from app.platform.auth.authn.constants import (
 )
 from app.platform.auth.authn.core import SameSite
 from app.platform.auth.authn.transports.session.schemas import CSRFToken, SessionData, UserAgentInfo
-from app.platform.config.settings import get_settings
 from app.platform.logging import get_logger
 from app.platform.storage.base import AbstractStore
 from app.platform.util import utcnow
 from app.platform.util.http_utils import get_client_ip
 
 logger = get_logger(__name__)
-
-settings = get_settings()
 
 
 class SessionManager:
@@ -113,12 +110,15 @@ class SessionManager:
     # ======================================================================
     # timeout helpers
     # ======================================================================
-    def timeout_for_seconds(self, metadata: dict[str, Any] | None = None) -> int:
+    def timeout_seconds_for(self, metadata: dict[str, Any] | None = None) -> int:
         """Determine the session timeout in seconds."""
         if metadata and metadata.get(REMEMBER_ME_META_KEY):
             return int(self.remember_me_days.total_seconds())
         return int(self.session_timeout_minutes.total_seconds())
 
+    def _is_idle_expired(self, session: SessionData, now: datetime) -> bool:
+        window = timedelta(seconds=self.timeout_seconds_for(session.metadata))
+        return session.last_activity < now - window
     # ======================================================================
     # session lifecycle
     # ======================================================================
@@ -186,7 +186,7 @@ class SessionManager:
         ttl = (
             expiration_seconds
             if expiration_seconds is not None
-            else self.timeout_for_seconds(session_data.metadata)
+            else self.timeout_seconds_for(session_data.metadata)
         )
 
         session_data.session_id_raw = session_id_raw
@@ -216,6 +216,12 @@ class SessionManager:
         if session_data is None:
             return None
 
+        now = utcnow()
+        if self._is_idle_expired(session_data, now):
+            await self._terminate(session_storage_key, session_data, "session timeout")
+            return None
+
+        ttl = self.timeout_seconds_for(session_data.metadata)
 
 
     async def terminate_session(
