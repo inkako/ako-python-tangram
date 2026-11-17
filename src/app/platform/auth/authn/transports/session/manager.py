@@ -202,6 +202,22 @@ class SessionManager:
 
         return session_id, csrf_token
 
+    async def validate_session(
+            self,
+            session_id: str,
+    ) -> SessionData | None:
+        """Validate an existing session."""
+        if not session_id:
+            return None
+
+        session_storage_key = self._get_session_storage_key(session_id, is_raw=False)
+        session_data = await self.store.get(session_storage_key, SessionData)
+
+        if session_data is None:
+            return None
+
+
+
     async def terminate_session(
             self,
             session_id: str,

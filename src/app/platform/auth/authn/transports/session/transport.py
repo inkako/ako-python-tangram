@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY
+from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY, SESSION_COOKIE_NAME
 from app.platform.auth.authn.core import AuthContext, Principal, SameSite, Transport, TransportName
 from app.platform.auth.authn.transports.session.manager import SessionManager
 from app.platform.auth.authn.transports.session.routers import build_session_routes
@@ -82,7 +82,7 @@ class SessionTransport(Transport):
         if remember_me:
             metadata[REMEMBER_ME_META_KEY] = remember_me
 
-        session_id, csrf = await self.manager.create_session(
+        session_id, csrf_token = await self.manager.create_session(
             request,
             user.id,
             metadata=metadata,
@@ -91,13 +91,19 @@ class SessionTransport(Transport):
 
         cookie_max_age = self.manager.timeout_for_seconds(metadata) if remember_me else None
 
-        self.manager.set_session_cookies(response, session_id, csrf, cookie_max_age)
+        self.manager.set_session_cookies(response, session_id, csrf_token, cookie_max_age)
 
         return {
             "id":user.id,
             "username":user.name,
-            "csrf_token": csrf,
+            "csrf_token": csrf_token,
         }
 
     async def authenticate(self, auth_context: AuthContext) -> Principal | None:
-        pass
+        session_id = auth_context.request.cookies.get(SESSION_COOKIE_NAME)
+        if not session_id:
+            return None
+
+        session_data = self.manager.validate_session(session_id)
+        if session_data is None:
+            return None
