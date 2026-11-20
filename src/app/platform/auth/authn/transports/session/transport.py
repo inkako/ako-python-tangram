@@ -1,18 +1,21 @@
 from typing import Any, override
 
+from app.platform.constant.enums import AccountStatusEnum
 from fastapi import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY, SESSION_COOKIE_NAME
+from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY, SESSION_COOKIE_NAME, SAFE_METHODS, CSRF_HEADER_NAME
 from app.platform.auth.authn.core import AuthContext, Principal, SameSite, Transport, TransportName
 from app.platform.auth.authn.transports.session.manager import SessionManager
 from app.platform.auth.authn.transports.session.routers import build_session_routes
 from app.platform.auth.users.models import User
 from app.platform.auth.users.service import UserService
 from app.platform.storage.base import AbstractStore
+import logging
 
+logger = logging.getLogger(__name__)
 
 class SessionTransport(Transport):
     def __init__(
@@ -102,8 +105,27 @@ class SessionTransport(Transport):
     async def authenticate(self, auth_context: AuthContext) -> Principal | None:
         session_id = auth_context.request.cookies.get(SESSION_COOKIE_NAME)
         if not session_id:
+            logger.warning("No session id found in cookies")
             return None
 
-        session_data = self.manager.validate_session(session_id)
+        if (auth_context.enforce_csrf
+                and auth_context.request.method not in SAFE_METHODS):
+            csrf_header = auth_context.request.headers.get(CSRF_HEADER_NAME)
+            if not csrf_header:
+                logger.warning("No CSRF header found in request")
+                return None
+
+        session_data = await self.manager.validate_session(session_id, auth_context.enforce_csrf)
         if session_data is None:
+            logger.warning("Invalid session")
             return None
+
+        user = await self.user_service.get(auth_context.db_session, session_data.user_id)
+
+        if (user is None
+                or user.account_status != AccountStatusEnum.ACTIVE):
+            logger.warning("User is inactive or does not exist")
+            return None
+
+        return Principal(user.id, user)
+

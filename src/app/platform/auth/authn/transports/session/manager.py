@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 class SessionManager:
     def __init__(
             self,
-            store: AbstractStore,
+            store: AbstractStore[SessionData],
             *,
             csrf_enabled: bool,
             session_key_prefix: str,
@@ -205,6 +205,7 @@ class SessionManager:
     async def validate_session(
             self,
             session_id: str,
+            enforce_csrf: bool = True,
     ) -> SessionData | None:
         """Validate an existing session."""
         if not session_id:
@@ -216,13 +217,32 @@ class SessionManager:
         if session_data is None:
             return None
 
+        # validate session
         now = utcnow()
         if self._is_idle_expired(session_data, now):
             await self._terminate(session_storage_key, session_data, "session timeout")
             return None
 
+        # update session
+        def touch(data: SessionData) -> None:
+            data.last_activity = utcnow()
         ttl = self.timeout_seconds_for(session_data.metadata)
+        touched = await self.store.modify(session_storage_key, SessionData, touch, expiration=ttl)
+        if touched  is None:
+            return None
 
+        # update index ttl
+        await self._index_user_sessions(user_id=session_data.user_id, session_id_raw=session_data.session_id_raw, expiration=ttl)
+
+        # extend csrf ttl
+        if enforce_csrf:
+            csrf_storage_key = self._get_csrf_storage_key(touched.metadata.get(CSRF_TOKEN_ID_META_KEY))
+            extended = await self.store.extend(csrf_storage_key, expiration=ttl)
+            if not extended:
+                logger.warning("Failed to extend CSRF token TTL for session %s", session_id)
+                return None
+
+        return touched
 
     async def terminate_session(
             self,

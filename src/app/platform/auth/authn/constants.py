@@ -31,3 +31,7 @@ CSRF_TOKEN_ID_META_KEY = "csrf_token_id"
 SESSION_COOKIE_NAME = "session_id"
 CSRF_COOKIE_NAME = "csrf_token"
 CSRF_HEADER_NAME = "X-CSRF-Token"
+
+
+# HTTP methods that don't mutate state and are therefore exempt from CSRF.
+SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "TRACE"})

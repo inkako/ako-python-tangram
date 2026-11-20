@@ -15,7 +15,6 @@ class PrincipalResolver:
             self,
             request: Request,
             db_session: AsyncSession,
-            transport: Transport,
             *,
             enforce_csrf: bool = True,
     ) -> Principal:
@@ -26,7 +25,7 @@ class PrincipalResolver:
         ctx = self._auth_ctx(request, db_session, enforce_csrf)
 
         # get principal by authenticate with transport
-        return await transport.authenticate(ctx)
+        return await self.transport.authenticate(ctx)
 
     @classmethod
     def _auth_ctx(cls, request: Request, db_session: AsyncSession, enforce_csrf: bool):

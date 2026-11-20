@@ -1,6 +1,7 @@
-from typing import Any, override
+from typing import Any, override, Callable
 
 from pydantic import BaseModel
+from redis import WatchError
 from redis.asyncio import Redis
 
 from app.platform.config.settings import get_settings
@@ -73,6 +74,40 @@ class RedisStore[T: BaseModel](AbstractStore[T]):
         if isinstance(member, BaseModel):
             member = member.model_dump_json().encode("utf-8")
         return await self.client.srem(key, member)
+
+    @override
+    async def modify(
+            self,
+            key: str,
+            model_class: type[T],
+            change: Callable[[T], None],
+            reset_expiration: bool = True,
+            expiration: int | None = None,
+    ) -> T | None:
+        async with self.client.pipeline(transaction=True) as pipe:
+            #
+            while True:
+                try:
+                    await pipe.watch(key)
+                    raw = await pipe.get(key)
+                    if raw is None:
+                        return None
+                    data = model_class.model_validate_json(raw)
+                    change(data)
+                    pipe.multi()
+                    if reset_expiration:
+                        pipe.set(key, data.model_dump_json().encode("utf-8"), ex=expiration)
+                    else:
+                        pipe.set(key, data.model_dump_json().encode("utf-8"))
+                    await pipe.execute()
+                    break
+                except WatchError:
+                    continue
+            return data
+
+    @override
+    async def extend(self, key: str, expiration: int) -> bool:
+        return await self.client.expire(key, expiration)
 
 
 settings = get_settings()

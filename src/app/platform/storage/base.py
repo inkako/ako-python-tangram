@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 from pydantic import BaseModel
 
@@ -52,4 +52,19 @@ class AbstractStore[T: BaseModel](ABC):
             key: str,
             member: Any,
     ) -> int:
+        ...
+
+    @abstractmethod
+    async def modify(
+            self,
+            key: str,
+            model_class: type[T],
+            change: Callable[[T], None],
+            reset_expiration: bool = True,
+            expiration: int | None = None,
+    ) -> T | None:
+        ...
+
+    @abstractmethod
+    async def extend(self, key: str, expiration: int) -> bool:
         ...
