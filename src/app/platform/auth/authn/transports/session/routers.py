@@ -37,4 +37,29 @@ def build_session_routes(transport: "SessionTransport") -> APIRouter:
             form_data=form_data,
         )
 
+    @router.post("/logout")
+    async def logout(
+            request: Request,
+            response: Response,
+            db: AsyncSessionDep,
+    ) -> dict[str, Any]:
+        """Revoke the current session and clear the auth cookies (CSRF-protected).
+
+        Clears every configured transport's cookies, including a bearer refresh
+        cookie. A session that already expired has nothing left to protect, so
+        its cookies are cleared without a CSRF check. The body of
+        [complete_logout][crudauth.transports.session.transport.SessionTransport.complete_logout].
+        """
+
+        if is_cross_site(request):
+            raise ForbiddenException("Cross-site logout are not allowed.")
+
+        await transport.complete_logout(
+            db=db,
+            request=request,
+            response=response,
+        )
+
+        return {"detail": "Logged out"}
+
     return router

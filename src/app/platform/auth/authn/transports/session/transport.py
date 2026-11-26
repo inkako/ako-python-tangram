@@ -144,3 +144,32 @@ class SessionTransport(Transport):
             raise CSRFException("Missing CSRF token")
         if not await self.manager.validate_csrf_token(session_id, header):
             raise CSRFException("Invalid CSRF token")
+
+    async def complete_logout(self, db: AsyncSession, request: Request, response: Response):
+        """End the session the request's cookie names, clear the cookies, and fire ``on_after_logout``.
+
+        What ``/logout`` does, for an app with a logout route of its own (an HTML form,
+        say). A live session must pass the CSRF check first, so the request needs the
+        ``X-CSRF-Token`` header; one that already expired has nothing left to protect,
+        so its cookies are cleared without it. Every configured transport's cookies are
+        cleared, a bearer refresh cookie included. The hook gets the account and a
+        context naming the session that ended by its ``session_handle``.
+
+        Returns:
+            ``True`` if a session was ended, ``False`` if there was none to end.
+
+        Raises:
+            CSRFException: A live session without a valid CSRF token.
+        """
+        session_id = request.cookies.get(SESSION_COOKIE_NAME)
+        session_data = (
+            await self.manager.validate_session(session_id)
+            if session_id
+            else None
+        )
+
+        if session_id and session_data is not None:
+            await self.enforce_csrf(request, session_id)
+            await self.manager.terminate_session(session_id, reason="Logged out")
+
+        self.manager.clear_session_cookies(response)

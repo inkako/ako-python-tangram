@@ -206,7 +206,6 @@ class SessionManager:
     async def validate_session(
             self,
             session_id: str,
-            enforce_csrf: bool = True,
     ) -> SessionData | None:
         """Validate an existing session."""
         if not session_id:
@@ -380,3 +379,18 @@ class SessionManager:
             httponly=False,
             samesite=self.cookie_samesite,
         )
+
+    def clear_session_cookies(self, response: Response) -> None:
+        """Delete the session + CSRF cookies.
+
+        Note:
+            Deletes with the same ``secure``/``samesite`` as the set - some
+            browsers only honor a deletion when those attributes match.
+        """
+        for name in (SESSION_COOKIE_NAME, CSRF_COOKIE_NAME):
+            response.delete_cookie(
+                name,
+                path=self.cookie_path,
+                secure=self.cookie_secure,
+                samesite=self.cookie_samesite,
+            )
