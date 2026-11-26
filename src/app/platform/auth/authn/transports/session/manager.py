@@ -119,6 +119,7 @@ class SessionManager:
     def _is_idle_expired(self, session: SessionData, now: datetime) -> bool:
         window = timedelta(seconds=self.timeout_seconds_for(session.metadata))
         return session.last_activity < now - window
+
     # ======================================================================
     # session lifecycle
     # ======================================================================
@@ -226,21 +227,24 @@ class SessionManager:
         # update session
         def touch(data: SessionData) -> None:
             data.last_activity = utcnow()
+
         ttl = self.timeout_seconds_for(session_data.metadata)
         touched = await self.store.modify(session_storage_key, SessionData, touch, expiration=ttl)
-        if touched  is None:
+        if touched is None:
             return None
 
         # update index ttl
-        await self._index_user_sessions(user_id=session_data.user_id, session_id_raw=session_data.session_id_raw, expiration=ttl)
+        await self._index_user_sessions(
+            user_id=session_data.user_id,
+            session_id_raw=session_data.session_id_raw,
+            expiration=ttl,
+        )
 
         # extend csrf ttl
-        if enforce_csrf:
-            csrf_storage_key = self._get_csrf_storage_key(touched.metadata.get(CSRF_TOKEN_ID_META_KEY))
-            extended = await self.store.extend(csrf_storage_key, expiration=ttl)
-            if not extended:
-                logger.warning("Failed to extend CSRF token TTL for session %s", session_id)
-                return None
+        csrf_id = touched.metadata.get(CSRF_TOKEN_ID_META_KEY)
+        if csrf_id:
+            csrf_storage_key = self._get_csrf_storage_key(csrf_id)
+            await self.store.extend(csrf_storage_key, expiration=ttl)
 
         return touched
 
@@ -331,6 +335,17 @@ class SessionManager:
             expiration=ttl,
         )
         return token, token_raw
+
+    async def validate_csrf_token(
+            self,
+            session_id: str,
+            csrf_token: str,
+    ) -> bool:
+        token_storage_key = self._get_csrf_storage_key(csrf_token)
+        token_data = await self.store.get(token_storage_key, CSRFToken)
+        if token_data is None:
+            return False
+        return hmac.compare_digest(token_data.session_id, self._session_key(session_id))
 
     # ======================================================================
     # cookies

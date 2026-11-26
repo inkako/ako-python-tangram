@@ -1,19 +1,22 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Literal
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Literal
 
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette.responses import Response
 
 from app.platform.auth.authn.exceptions import UnauthenticatedException
 from app.platform.auth.users.models import User
-from app.platform.auth.users.service import UserService
 from app.platform.constant.enums import AccountStatusEnum
 from app.platform.logging import get_logger
 from app.platform.util import canonical_identifier, verify_password
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.platform.auth.users.service import UserService
 
 logger = get_logger(__name__)
 
@@ -34,8 +37,33 @@ class CookieConfig:
 @dataclass
 class AuthContext:
     request: Request
-    db_session: AsyncSession
+    db_session: "AsyncSession"
     enforce_csrf: bool
+    _cache: dict[Any, Any] = field(default_factory=dict)
+
+    async def resolve_user(self, user_id: Any, user_service: "UserService"):
+        """Shared identity resolver - load the user row for ``user_id`` (cached per request)."""
+        if user_id in self._cache:
+            return self._cache[user_id]
+
+        user = await user_service.get(self.db_session, user_id)
+        self._cache[user_id] = user
+        return user
+
+    @staticmethod
+    def build_principal(
+            *,
+            user_id: Any,
+            user: User,
+            metadata: dict[str, Any] | None = None,
+    ) -> Principal:
+        """Construct a Principal, filling status flags from the user row."""
+        return Principal(
+            user_id=user_id,
+            user=user,
+            is_superuser=user.is_superuser if user is not None else False,
+            metadata=metadata or {},
+        )
 
 
 @dataclass(frozen=True)
@@ -43,6 +71,7 @@ class Principal:
     user_id: Any
     user: User = None
     is_superuser: bool = False
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class Transport(ABC):

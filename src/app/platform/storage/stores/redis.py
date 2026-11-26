@@ -1,4 +1,5 @@
-from typing import Any, override, Callable
+from collections.abc import Callable
+from typing import Any, override
 
 from pydantic import BaseModel
 from redis import WatchError

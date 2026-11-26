@@ -18,6 +18,12 @@ class SessionData(BaseModel):
     token_version: int | None = None
 
 
+class CSRFToken(BaseModel):
+    token: str
+    session_id: str
+    expiry: datetime
+
+
 class UserAgentInfo(BaseModel):
     browser: str = "Unknown"
     browser_version: str = ""
@@ -26,9 +32,3 @@ class UserAgentInfo(BaseModel):
     is_mobile: bool = False
     is_tablet: bool = False
     is_pc: bool = False
-
-
-class CSRFToken(BaseModel):
-    token: str
-    session_id: str
-    expiry: datetime

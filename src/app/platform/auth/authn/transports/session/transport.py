@@ -1,21 +1,23 @@
+import logging
 from typing import Any, override
 
-from app.platform.constant.enums import AccountStatusEnum
 from fastapi import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.platform.auth.authn.constants import REMEMBER_ME_META_KEY, SESSION_COOKIE_NAME, SAFE_METHODS, CSRF_HEADER_NAME
+from app.platform.auth.authn.constants import CSRF_HEADER_NAME, REMEMBER_ME_META_KEY, SAFE_METHODS, SESSION_COOKIE_NAME
 from app.platform.auth.authn.core import AuthContext, Principal, SameSite, Transport, TransportName
+from app.platform.auth.authn.exceptions import CSRFException
 from app.platform.auth.authn.transports.session.manager import SessionManager
 from app.platform.auth.authn.transports.session.routers import build_session_routes
 from app.platform.auth.users.models import User
 from app.platform.auth.users.service import UserService
+from app.platform.constant.enums import AccountStatusEnum
 from app.platform.storage.base import AbstractStore
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class SessionTransport(Transport):
     def __init__(
@@ -40,19 +42,19 @@ class SessionTransport(Transport):
         super().__init__(user_service=user_service)
         self.manager = SessionManager(
             store,
-            csrf_enabled = csrf_enabled,
-            session_key_prefix = session_key_prefix,
-            csrf_key_prefix = csrf_key_prefix,
-            key_secret = key_secret,
-            session_timeout_minutes = session_timeout_minutes,
-            absolute_timeout_enabled = absolute_timeout_enabled,
-            absolute_timeout_hours = absolute_timeout_hours,
-            remember_me_enabled = remember_me_enabled,
-            remember_me_days = remember_me_days,
-            max_sessions_per_user = max_sessions_per_user,
-            cookie_secure = cookie_secure,
-            cookie_samesite = cookie_samesite,
-            cookie_path = cookie_path,
+            csrf_enabled=csrf_enabled,
+            session_key_prefix=session_key_prefix,
+            csrf_key_prefix=csrf_key_prefix,
+            key_secret=key_secret,
+            session_timeout_minutes=session_timeout_minutes,
+            absolute_timeout_enabled=absolute_timeout_enabled,
+            absolute_timeout_hours=absolute_timeout_hours,
+            remember_me_enabled=remember_me_enabled,
+            remember_me_days=remember_me_days,
+            max_sessions_per_user=max_sessions_per_user,
+            cookie_secure=cookie_secure,
+            cookie_samesite=cookie_samesite,
+            cookie_path=cookie_path,
         )
 
     name: TransportName = "session"
@@ -97,8 +99,8 @@ class SessionTransport(Transport):
         self.manager.set_session_cookies(response, session_id, csrf_token, cookie_max_age)
 
         return {
-            "id":user.id,
-            "username":user.name,
+            "id": user.id,
+            "username": user.name,
             "csrf_token": csrf_token,
         }
 
@@ -108,24 +110,37 @@ class SessionTransport(Transport):
             logger.warning("No session id found in cookies")
             return None
 
-        if (auth_context.enforce_csrf
-                and auth_context.request.method not in SAFE_METHODS):
-            csrf_header = auth_context.request.headers.get(CSRF_HEADER_NAME)
-            if not csrf_header:
-                logger.warning("No CSRF header found in request")
-                return None
-
         session_data = await self.manager.validate_session(session_id, auth_context.enforce_csrf)
         if session_data is None:
             logger.warning("Invalid session")
+        if session_data is None:
             return None
 
-        user = await self.user_service.get(auth_context.db_session, session_data.user_id)
+        if auth_context.enforce_csrf:
+            await self.enforce_csrf(auth_context.request, session_id)
+
+        user = await auth_context.resolve_user(session_data.user_id, self.user_service)
 
         if (user is None
                 or user.account_status != AccountStatusEnum.ACTIVE):
             logger.warning("User is inactive or does not exist")
             return None
 
-        return Principal(user.id, user)
+        return auth_context.build_principal(user_id=user.id, user=user)
 
+    async def enforce_csrf(self, request: Request, session_id: str) -> None:
+        """Require a valid synchronizer-token header on unsafe methods.
+
+        Note:
+            Header-only by design: the ``csrf_token`` cookie auto-rides
+            cross-origin requests but a custom header does not, so requiring the
+            header (not just the cookie) is what makes the synchronizer-token check
+            load-bearing. Safe methods (GET/HEAD/OPTIONS) are exempt.
+        """
+        if request.method in SAFE_METHODS:
+            return
+        header = request.headers.get(CSRF_HEADER_NAME)
+        if not header:
+            raise CSRFException("Missing CSRF token")
+        if not await self.manager.validate_csrf_token(session_id, header):
+            raise CSRFException("Invalid CSRF token")

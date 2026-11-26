@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, Integer, SmallInteger, String
+from sqlalchemy import BigInteger, Integer, SmallInteger, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.platform.constant.enums import AccountStatusEnum
@@ -32,6 +32,11 @@ class User(TimestampMixin, SoftDeletionMixin, Base):
     token_version: Mapped[int] = mapped_column(
         Integer,
         default=0,
+        nullable=False,
+    )
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
         nullable=False,
     )
 

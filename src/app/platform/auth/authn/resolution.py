@@ -28,7 +28,12 @@ class PrincipalResolver:
         return await self.transport.authenticate(ctx)
 
     @classmethod
-    def _auth_ctx(cls, request: Request, db_session: AsyncSession, enforce_csrf: bool):
+    def _auth_ctx(
+            cls,
+            request: Request,
+            db_session: AsyncSession,
+            enforce_csrf: bool,
+    ) -> AuthContext:
         return AuthContext(
             request=request,
             db_session=db_session,

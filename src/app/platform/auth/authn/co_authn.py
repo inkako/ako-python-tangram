@@ -1,10 +1,11 @@
+from fastapi import Request
+
 from app.platform.auth.authn.core import Principal, Transport
 from app.platform.auth.authn.exceptions import UnauthenticatedException
 from app.platform.auth.authn.resolution import PrincipalResolver
 from app.platform.dependency import AsyncSessionDep
 from app.platform.logging import get_logger
 from app.platform.storage.base import AbstractStore
-from fastapi import Request
 
 logger = get_logger(__name__)
 
@@ -23,7 +24,7 @@ class CoAuthn:
     async def current_user(
             self,
             request: Request,
-            db_session: AsyncSessionDep
+            db_session: AsyncSessionDep,
     ) -> Principal:
         """Get the current user."""
         principal = await self._resolver.resolve(request, db_session)
