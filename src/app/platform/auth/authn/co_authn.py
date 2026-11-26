@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, APIRouter
 
 from app.platform.auth.authn.core import Principal, Transport
 from app.platform.auth.authn.exceptions import UnauthenticatedException
@@ -32,11 +32,9 @@ class CoAuthn:
             raise UnauthenticatedException("Not authenticated")
         return principal
 
+    @property
+    def router(self) -> APIRouter:
+        router = APIRouter()
 
-co_authn = CoAuthn(
 
-)
-
-
-def get_co_authn() -> CoAuthn:
-    return co_authn
+        return router
